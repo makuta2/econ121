@@ -1,10 +1,8 @@
 # uncomment if these packages are not installed
 # install.packages(c('tidyverse','fixest'))
 
-###########################################
-#ESTIMATING RACIAL DIFFERENCES IN EARNINGS#
-#IN THE NAT'L LONGITUDINAL SURVEY OF YOUTH#
-###########################################
+# this script estimates racial differences in earnings using data from the
+# National Longitudinal Survey of Youth '79
 
 # clear environment and load packages
 rm(list=ls())
@@ -24,16 +22,17 @@ sd(nlsy79$laborinc18,na.rm=TRUE)
 # more detailed summary with percentiles
 summary(nlsy79$laborinc18)
 
-# we can see this better when we plot histograms by race
-nlsy79 %>% ggplot(aes(x = laborinc18)) +
-             geom_histogram(fill = "white", colour = "black") +
-             facet_grid(black ~ .)
+# we can see more detail when we plot histograms by race
+nlsy79 %>% 
+  ggplot(aes(x = laborinc18)) +
+    geom_histogram() +
+    facet_wrap(~black, ncol=1) # separate graphs by race, stacked into one column
 
-# we will estimate differences between blacks and non-blacks.
+# we will estimate differences in mean income between blacks and non-blacks.
 
 # means by race
 nlsy79 %>% 
-  drop_na(laborinc18) %>%
+  drop_na(laborinc18) %>% # removes NA values so we don't need to use na.rm below
   group_by(black) %>% 
   summarize(mean=mean(laborinc18),
             sd=sd(laborinc18),
@@ -71,9 +70,11 @@ summary(model1)
 # let's restrict to people restrict to people who worked for pay for at least 
 # 1000 hours: equivalent to a part-time job of 20 hours per week for 50 weeks.
 summary(nlsy79$hours18)
+
 nlsy79_workers <- 
   nlsy79 %>% 
-    filter(hours18>=1000 & laborinc18>0)
+  filter(hours18>=1000 & laborinc18>0)
+
 summary(nlsy79_workers$hours18)
 
 # means by race
@@ -81,8 +82,8 @@ nlsy79_workers %>%
   drop_na(laborinc18) %>%
   group_by(black) %>% 
   summarize(mean=mean(laborinc18),
-                 sd=sd(laborinc18),
-                 n=n())
+            sd=sd(laborinc18),
+            n=n())
 
 # still an $19k difference
 
