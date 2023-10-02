@@ -25,14 +25,19 @@ Verbal: Interpret the summary statistics.
 ```{r message=FALSE, warning=FALSE}
 # The PDF will show the code you write here but not the output.
 # Load packages and dataset here.
+
 library(readr)
 
-install.packages("tidyverse")
+tinytex::install_tinytex(force = TRUE)
+
+install.packages('tidyverse', repos = "http://cran.us.r-project.org")
 library(tidyverse)
+
+install.packages('plyr', repos = "http://cran.us.r-project.org")
 library(dplyr)
-library(readr)
+
 ssa_names <- read_csv("D:/Documents/Class/Econ 121/econ121/data/ssa_names.csv")
-View(ssa_names)
+# View(ssa_names)
 
 ```
 
@@ -73,29 +78,35 @@ total_girl_names <- total_names%>%
 
 
 total_girl_names%>%
-  filter(total_frequency==max(total_frequency)) #filter total girl names by the most frequent name
+  #filter total girl names by the most frequent name
+  filter(total_frequency==max(total_frequency)) 
 
 
-most_common_girl <- max(total_girl_names$total_frequency) #store the frequency for girls
+#store the frequency for girls
+most_common_girl <- max(total_girl_names$total_frequency) 
 
 
 
 #boys
 total_boy_names <- total_names%>%
-  filter(sex=="M") #filter by sex for male
+  #filter by sex for male
+  filter(sex=="M") 
 
 
 total_boy_names%>%
-  filter(total_frequency==max(total_frequency)) #filter total boy names by the most frequent name
+  #filter total boy names by the most frequent name
+  filter(total_frequency==max(total_frequency)) 
 
-
-most_common_boy <- max(total_boy_names$total_frequency) #store the frequency for boy
+#store the frequency for boy
+most_common_boy <- max(total_boy_names$total_frequency)
 
 #add the total frequencies
 print(most_common_girl+most_common_boy)
 #Total of 6,261,170 babies of the 2 most popular names.
 
-#Mary was the most popular name for girls at 1,997,025 and Michael for boys at 4,264,145 A total of 6,261,170 babies since 1940 were born under these 2 popular names.
+# Mary was the most popular name for girls at 1,997,025 
+# and Michael for boys at 4,264,145 A total of 6,261,170 babies 
+# since 1940 were born under these 2 popular names.
 ```
 
 \newpage
@@ -112,16 +123,18 @@ Verbal: Interpret your results.
 unique_girls_by_year <- ssa_names %>%
   filter(sex=="F")%>%
   group_by(year) %>%
-  summarise(unique_name_count = n_distinct(name)) #count the amount of distinct names each year for girls
+  #count the amount of distinct names each year for girls
+  summarise(unique_name_count = n_distinct(name)) 
 
 unique_girls_by_year
 
 unique_boys_by_year <- ssa_names %>%
   filter(sex=="M")%>%
   group_by(year) %>%
-  summarise(unique_name_count = n_distinct(name))#count the amount of distinct names each year for boys
+  #count the amount of distinct names each year for boys
+  summarise(unique_name_count = n_distinct(name))
 
-#unique_boys_by_year
+unique_boys_by_year
 
 unique_names_plot <- ggplot() +
   geom_line(data = unique_boys_by_year, aes(x = year, y = unique_name_count, color = "Boys")) +
@@ -133,7 +146,11 @@ unique_names_plot <- ggplot() +
 
 unique_names_plot
 
-#Throughout the years, girls have had more unique names than boys, and they trend in similar ways. The number of unique names for both boys has remained relatively flat compared to girls until 1960-1970s. Both sexes peaked in uniqueness in 2008, where boys returned to a flat rate, while girls started declining.
+# Throughout the years, girls have had more unique names than boys, 
+# and they trend in similar ways. The number of unique names for both boys 
+# has remained relatively flat compared to girls until 1960-1970s. 
+# Both sexes peaked in uniqueness in 2008, where boys returned to a flat rate, 
+# while girls started declining.
 
 ```
 
@@ -149,22 +166,22 @@ Verbal: Interpret your results.
 ```{r echo=TRUE}
 # All question 5 code here
 
-total_girl_babies <- ssa_names %>%
+ratio_girl_babies <- ssa_names %>%
   filter(sex=="F")%>%
   group_by(year) %>%
   summarise(ratio = n_distinct(name)/sum(frequency))
-total_girl_babies
+#ratio_girl_babies
 
-total_boy_babies <- ssa_names %>%
+ratio_boy_babies <- ssa_names %>%
   filter(sex=="M")%>%
   group_by(year) %>%
   summarise(ratio = n_distinct(name)/sum(frequency))
-total_boy_babies
+#ratio_boy_babies
 
 
 ratio_names_plot <- ggplot() +
-  geom_line(data = total_boy_babies, aes(x = year, y = ratio, color = "Boys")) +
-  geom_line(data = total_girl_babies, aes(x = year, y = ratio, color = "Girls")) +
+  geom_line(data = ratio_boy_babies, aes(x = year, y = ratio, color = "Boys")) +
+  geom_line(data = ratio_girl_babies, aes(x = year, y = ratio, color = "Girls")) +
   
   labs(x = "Year", y = "Ratio", title = "Ratio of Unique Names by Year (Boys vs. Girls)") +
   scale_color_manual(values = c("Boys" = "blue", "Girls" = "salmon")) +
@@ -172,7 +189,10 @@ ratio_names_plot <- ggplot() +
 
 ratio_names_plot
 
-#The ratio of unique names increases over time, with slight declines during certain time periods, such as the mid-1970s to mid-1980s, and after 2010, for girls a steady decline while for boys only a short decline. The patterns display a decreasing of conformity among babies. 
+#The ratio of unique names increases over time, with slight declines 
+# during certain time periods, such as the mid-1970s to mid-1980s, and after 
+#2010, for girls a steady decline while for boys only a short decline. 
+# The patterns display a decreasing of conformity among babies. 
 
 ```
 
@@ -182,7 +202,7 @@ ratio_names_plot
 
 Verbal: Which names and why?
 
-I chose Apple because it was just the first word I could think of that starts with "A". 
+Apple because it was the first word I could think of that starts with "A". 
 Sam because this is a gender neutral name, short for Samuel or Samantha. 
 
 \newpage
@@ -258,12 +278,16 @@ Sam_names_plot <- ggplot() +
   theme_minimal()
 
 Apple_names_plot_log
-#I had not checked beforehand how many boys were named Apple, so I was surprised to see no line representing boys named Apple
+#I had not checked beforehand how many boys were named Apple, 
+#so I was surprised to see no line representing boys named Apple
 
 Sam_names_plot_log
-#I was surprised to see how erratic, but constant Sam's name was for girls, meanwhile for boys, Sam was a slow decline.
+#I was surprised to see how erratic, but constant Sam's name was for girls, 
+#meanwhile for boys, Sam was a slow decline.
+
 Sam_names_plot
-#I checked again without the Log, and see that Sam is near non-existent among girls, while Sam was still relatively popular before the 1960s for boys. 
+#I checked again without the Log, and see that Sam is near non-existent 
+#among girls, while Sam was still relatively popular before the 1960s for boys. 
 
 ```
 
@@ -290,6 +314,11 @@ picked_names_plot <- ggplot() +
   theme_minimal()
 
 picked_names_plot
-#Sam and Apple are similar in popularity among girls, as they are very unconventional names, and Apple only started appearing after the 1970s, predictably more popular among  hippie/non-conformist parents. Sam as a name for boys sees a steady decline after 1960, which is the same time as the near exponential increase of non-conformity among all baby names mentioned in question 5.
+#Sam and Apple are similar in popularity among girls, as they are very 
+# unconventional names, and Apple only started appearing after the 1970s, 
+# predictably more popular among  hippie/non-conformist parents. Sam as a name 
+# for boys sees a steady decline after 1960, which is the same time as the near
+# exponential increase of non-conformity among all baby names mentioned in
+# question 5.
 
-````
+```
