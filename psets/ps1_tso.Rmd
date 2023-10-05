@@ -1,6 +1,6 @@
 ---
 title: "ECON 121 FA23 Problem Set 1"
-author: "Robert Tso"
+author: "Robert Tso"                                                                                                                                #:)#
 output: pdf_document
 ---
 
@@ -225,12 +225,8 @@ Apple_names_girls <- Apple_names%>%
 Apple_names_boys <- Apple_names%>%
   filter(sex=="M")
 
-#Apple_names_girls
-#Apple_names_boys
-
-
-Sam_names <- ssa_names %>%
-  filter(name=="Sam")
+Apple_names_girls
+Apple_names_boys
 
 Apple_names_plot_log <- ggplot() +
   geom_line(data = unique_boys_by_year, aes(x = year, y = unique_name_count, color = "Boys")) +
@@ -251,9 +247,8 @@ Sam_names_girls <- Sam_names%>%
 Sam_names_boys <- Sam_names%>%
   filter(sex=="M")
 
-#Sam_names_girls
-#Sam_names_boys
-
+Sam_names_girls
+Sam_names_boys
 
 
 Sam_names_plot_log <- ggplot() +
