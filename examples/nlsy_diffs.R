@@ -85,12 +85,12 @@ nlsy79_workers %>%
             sd=sd(laborinc18),
             n=n())
 
-# still an $19k difference
+# still a $19k difference
 
 # now let's look at log earnings.
 nlsy79_workers <- 
   nlsy79_workers %>% 
-    mutate(loginc18 = log(laborinc18))
+  mutate(loginc18 = log(laborinc18))
 
 nlsy79_workers %>% 
   drop_na(loginc18) %>%
