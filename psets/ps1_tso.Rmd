@@ -12,7 +12,7 @@ rm(list = ls()) # clears the environment
 ## Question 1
 
 Verbal: list group members.
-Robert Tso
+Robert Tso - A13829791
 
 \newpage
 
@@ -28,7 +28,7 @@ Verbal: Interpret the summary statistics.
 
 library(readr)
 
-tinytex::install_tinytex(force = TRUE)
+#tinytex::install_tinytex()
 
 install.packages('tidyverse', repos = "http://cran.us.r-project.org")
 library(tidyverse)
@@ -36,7 +36,8 @@ library(tidyverse)
 install.packages('plyr', repos = "http://cran.us.r-project.org")
 library(dplyr)
 
-ssa_names <- read_csv("D:/Documents/Class/Econ 121/econ121/data/ssa_names.csv")
+#ssa_names <- read_csv("D:/Documents/Class/Econ 121/econ121/data/ssa_names.csv")
+ssa_names <- read_csv("C:/Users/hp/Documents/GitHub/econ121/data/ssa_names.csv")
 # View(ssa_names)
 
 ```
@@ -44,11 +45,11 @@ ssa_names <- read_csv("D:/Documents/Class/Econ 121/econ121/data/ssa_names.csv")
 ```{r echo=TRUE}
 # The PDF will show the code AND output here.
 # Summarize the data here.
-# List of newborn boys and girls starting from 1940 to 2022.
 
-summarise(ssa_names)
+summary(ssa_names)
 
-
+#There are 1,718,855 name entries, ranging from years of 1940 to 2022. 
+#A minimum of 5 occurrences for any name and maximum of 99,693 occurrences.
 
 ```
 
@@ -76,10 +77,8 @@ total_names
 total_girl_names <- total_names%>%
   filter(sex=="F") #filter by sex for female
 
-
-total_girl_names%>%
-  #filter total girl names by the most frequent name
-  filter(total_frequency==max(total_frequency)) 
+#filter total girl names by the most frequent name
+total_girl_names %>% filter(total_frequency==max(total_frequency)) 
 
 
 #store the frequency for girls
@@ -92,10 +91,8 @@ total_boy_names <- total_names%>%
   #filter by sex for male
   filter(sex=="M") 
 
-
-total_boy_names%>%
-  #filter total boy names by the most frequent name
-  filter(total_frequency==max(total_frequency)) 
+#filter total boy names by the most frequent name
+total_boy_names %>% filter(total_frequency==max(total_frequency)) 
 
 #store the frequency for boy
 most_common_boy <- max(total_boy_names$total_frequency)
@@ -126,7 +123,7 @@ unique_girls_by_year <- ssa_names %>%
   #count the amount of distinct names each year for girls
   summarise(unique_name_count = n_distinct(name)) 
 
-unique_girls_by_year
+#unique_girls_by_year
 
 unique_boys_by_year <- ssa_names %>%
   filter(sex=="M")%>%
@@ -134,7 +131,7 @@ unique_boys_by_year <- ssa_names %>%
   #count the amount of distinct names each year for boys
   summarise(unique_name_count = n_distinct(name))
 
-unique_boys_by_year
+#unique_boys_by_year
 
 unique_names_plot <- ggplot() +
   geom_line(data = unique_boys_by_year, aes(x = year, y = unique_name_count, color = "Boys")) +
