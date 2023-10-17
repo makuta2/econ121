@@ -1,5 +1,5 @@
 # uncomment if these packages are not installed
-# install.packages(c('tidyverse','fixest','car'))
+# install.packages(c('tidyverse','fixest'))
 
 # this script estimates the relationship between age and asset 
 # ownership in India, using the National Family Health Survey
