@@ -1,0 +1,219 @@
+---
+title: "ECON 121 FA23 Problem Set 2"
+author: "Robert Tso"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) # sets the code chunk format
+rm(list = ls()) # clears the environment
+```
+
+## Question 1
+
+Verbal: list group members.
+Robert Tso - A13829791
+Tomas Lopez - 
+Stephanie Nguyen - 
+
+\newpage
+
+## Question 2
+
+Beta_0 is the intercept of the formula
+Beta_1 is the coefficient for the level of education
+
+\newpage
+
+## Question 3
+
+Code: Load packages and dataset, modify sample, generate variables, summarize data.
+
+Verbal: Interpret the summary statistics.
+
+```{r message=FALSE, warning=FALSE}
+# The PDF will show the code you write here but not the output.
+# Load packages and dataset, modify sample, generate variables here.
+library(tidyverse)
+```
+
+```{r echo=TRUE}
+# The PDF will show the code AND output here.
+# Summarize the data here.
+load("D:/Documents/Class/Econ 121/econ121/data/cps18.Rdata")
+summary(cps18)
+#drop rows with fewer than 50 weeks, worked fewer than 35 hours in a typical week, or has 0 dollars in annual earnings
+cps <- cps18 %>% 
+  filter(
+  wkswork>=50 &
+  hrs_per_wk>=35 &
+  incwage > 0
+  )
+  
+#add log hourly wage variable
+ cps <- cps%>%
+  mutate(
+    annual_hours=wkswork*hrs_per_wk,
+    hr_wage=incwage/annual_hours,
+    log_hr_wage=log(hr_wage)
+  )
+ 
+#add race/ethnicity dummy variables
+Black <- ifelse(cps$race == 'black', 1, 0)
+Native <- ifelse(cps$race == 'native', 1, 0)
+Asian <- ifelse(cps$race == 'asian/pacific', 1, 0)
+Other <- ifelse(cps$race == 'multiple/other', 1, 0)
+
+#add the dummy's to the cps dataframe
+cps <- cps%>%
+  mutate(
+    Black=Black,
+    Native=Native,
+    Asian=Asian,
+    Other=Other
+  )
+
+#add up the education columns with weights of the total years spent.
+#since these are dummy variables, only one column for each row should be true
+cps <- cps %>%
+  mutate(education = 
+        ed_lt_hs*8 + #less than high school is assuming middle school completion
+        ed_some_hs*10 + #some high school is 2 years or half for total 10
+        ed_hs_degree*12 + #completing high school is total 12 years
+        ed_some_col*14 + #some college is 2 years or half for total 14
+        ed_ba_degree*16 + #BA is 16 years total       
+        ed_post_degree*18 #post degree is 2 years for 18 total
+        )
+#generate exper = age - education - 5
+cps <- cps %>%
+  mutate(exper = age - education - 5)
+
+#generate exper2 = exper^2
+cps <- cps %>%
+  mutate(exper2 = exper^2)
+
+view(cps)
+summary(cps)
+#The data's median is a 43 year old white male with 12 years of education.
+#The oldest person 64 years old and given a maximum experience of 51, 
+#only has 8 years of education
+#The max annual hours worked is over 4 times the median, 
+#and considering that the max and min weeks worked is only 2 apart
+```
+
+\newpage
+
+## Question 4
+
+Code: Estimate regression.
+
+Verbal: Interpret your results.
+
+```{r echo=TRUE}
+# All question 4 code here
+
+```
+
+\newpage
+
+## Question 5
+
+Code: Estimate regression.
+
+Verbal: Interpret your results.
+
+```{r echo=TRUE}
+# All question 5 code here
+
+```
+
+\newpage
+
+## Question 6
+
+Code: Assess statistical significance.
+
+Verbal: Interpret your results.
+
+```{r echo=TRUE}
+# All question 6 code here
+
+```
+
+\newpage
+
+## Question 7
+
+Code: Estimate regressions and assess significance of differences between them.
+
+Verbal: Interpret your results.
+
+```{r echo=TRUE}
+# All question 7 code here
+
+```
+
+\newpage
+
+## Question 8
+
+Code: Estimate regression, use delta method.
+
+Verbal: Interpret your results.
+
+```{r echo=TRUE}
+# All question 8 code here
+
+```
+
+\newpage
+
+## Question 9
+
+Code: Load dataset, compute unweighted and weighted means.
+
+Verbal: Interpret your results.
+
+```{r echo=TRUE}
+# All question 9 code here
+
+```
+
+\newpage
+
+## Question 10
+
+Code: Modify sample, estimate unweighted and weighted regressions.
+
+Verbal: Assess unweighted versus weighted results.
+
+```{r echo=TRUE}
+# All question 10 code here
+
+```
+
+\newpage
+
+## Question 11
+
+Verbal answer only, no code.
+
+\newpage
+
+## Question 12
+
+Verbal answer only, no code.
+
+\newpage
+
+## Question 13
+
+Code: Estimate regression.
+
+Verbal: Explain choice of covariates, interpret results.
+
+```{r echo=TRUE}
+# All question 13 code here
+
+```
+
