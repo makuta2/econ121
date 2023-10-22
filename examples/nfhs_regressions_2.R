@@ -36,10 +36,12 @@ feols(assets ~ age, data = nfhs4, vcov = ~clustnum, weights = ~weight, split = ~
 
 #first generate the interaction term
 nfhs4 <- mutate(nfhs4, ageXrural = age*rural)
+# could have also written: nfhs4$ageXrural <- nfhs4$age*nfhs4$rural
+
 # now run the model and save the results as model1 for later
 model1 <- feols(assets ~ age + rural + ageXrural, data = nfhs4, vcov = ~clustnum, weights = ~weight)
 model1
-# same t-statistic, subject to a bit of rounding error in our caltulations. 
+# same t-statistic, subject to a bit of rounding error in our calculations. 
 # assets rise less steeply with age in rural areas.
 
 # we could also do this more elegantly using R's functionality for
