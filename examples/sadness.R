@@ -6,7 +6,7 @@ rm(list = ls())
 # load packages
 library(tidyverse)
 library(fixest)
-library(mfx) # for easy estimation of marginal effects and odds ratios
+# I will load the mfx package below to estimate marginal effects and odds ratios
 
 # read in data
 load(url("https://github.com/tvogl/econ121/raw/main/data/nhis2010.Rdata"))
@@ -100,6 +100,8 @@ nhis2010 %>%
 # us to specify whether we want marginal effects at the averages of the
 # covariates or averages of the individual marginal effects. we will
 # see they are very similar.
+
+library(mfx) # for easy estimation of marginal effects and odds ratios
 
 # marginal effects at the means of the independent variables
 logitmfx(anysad ~ edyrs + age + male + black + hisp + asian + other + marstat, 
