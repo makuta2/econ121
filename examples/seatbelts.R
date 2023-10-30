@@ -12,11 +12,14 @@ rm(list = ls())
 # read in dataset
 sb <- read_csv("https://github.com/tvogl/econ121/raw/main/data/seatbelts.csv")
 
-# generate log income
+# generate log income per capita
 sb$lnincome <- log(sb$income)
 
 # summarize
 summary(sb)
+# fatalityrate is the number of fatalities per million traffic miles
+# vmt is the number of traffic miles driven, in milliions
+# sb_usage is the seat belt usage rate, from 0 to 1
 
 ##############################
 # VISUALIZE POLICY VARIATION #
