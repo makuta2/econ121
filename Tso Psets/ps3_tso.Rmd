@@ -34,9 +34,9 @@ The summary statistics show a seemingly near population pool of survey answers, 
 library(tidyverse)
 library(fixest)
 
-view(nhis2010)
 load(url("https://github.com/tvogl/econ121/raw/main/data/nhis2010.Rdata"))
 #load("C:/Users/hp/Documents/GitHub/econ121/data/nhis2010.Rdata")
+view(nhis2010)
 
 # drop observations with health missing/NA.
 nhis2010 <- nhis2010 %>% drop_na(health)
@@ -77,7 +77,7 @@ Risk of death for both categories go up with age, however the greatest differenc
 mortality_data <- nhis2010 %>%
   drop_na(age, mort)%>%
   group_by(health_dummy, age) %>%
-  summarise(mortality_rate = sum(mort) / n())
+  summarise(mortality_rate = mean(mort))
 
 # Create separate line plots for the two groups
 ggplot(mortality_data, aes(x = age, y = mortality_rate, color = factor(health_dummy))) +
@@ -103,6 +103,59 @@ Verbal: Interpret your results.
 
 ```{r echo=TRUE}
 # All question 4 code here
+
+
+# Create table for fair/poor health and mortality by family income
+graph_a <- nhis2010 %>%
+  drop_na(incfam,mort) %>%
+  group_by(incfam) %>%
+  summarise(mean_fair_poor_health = mean(health_dummy),
+            mean_mortality = mean(mort))
+
+# Create bar plots for family income
+fam_health <- ggplot(graph_a, aes(x = incfam)) +
+  geom_bar(aes(y = mean_fair_poor_health), stat = "identity", fill = "blue", position = "dodge") +
+  labs(x = "Family Income", y = "Mean Value", title = "Rates of Fair/Poor Health and Mortality by Family Income")
+
+fam_mort <- ggplot(graph_a, aes(x = incfam)) +
+  geom_bar(aes(y = mean_mortality), stat = "identity", fill = "red", position = "dodge") +
+  labs(x = "Family Income", y = "Mean Value", title = "Rates of Mortality by Family Income")
+
+# Categorize years of education into five categories
+nhis2010 <- nhis2010 %>%
+  drop_na(edyrs)%>%
+  mutate(education_category = case_when(
+    edyrs < 12 ~ "<12 (Less than High School)",
+    edyrs == 12 ~ "12 (High School Completion)",
+    edyrs >= 13 & edyrs <= 15 ~ "13-15 (Some College)",
+    edyrs == 16 ~ "16 (College Completion)",
+    edyrs > 16 ~ ">16 (Post-graduate Study)"
+  ))
+
+# Create table for fair/poor health and mortality by education category
+graph_b <- nhis2010 %>%
+  drop_na(mort)%>%
+  group_by(education_category) %>%
+  summarise(mean_fair_poor_health = mean(health_dummy),
+            mean_mortality = mean(mort))
+view(graph_a)
+
+# Create bar plots for education
+edu_health <- ggplot(graph_b, aes(x = education_category)) +
+  geom_bar(aes(y = mean_fair_poor_health), stat = "identity", fill = "blue", position = "dodge") +
+  labs(x = "Education Level", y = "Mean Value", title = "Rates of Fair/Poor Health by Education Level") +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1))  # Rotate x-axis labels
+
+edu_mort <- ggplot(graph_b, aes(x = education_category)) +
+  geom_bar(aes(y = mean_mortality), stat = "identity", fill = "red", position = "dodge") +
+  labs(x = "Education Level", y = "Mean Value", title = "Rates of Mortality by Education Level") +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1))  # Rotate x-axis labels
+
+
+fam_health
+fam_mort
+edu_health
+edu_mort
 
 ```
 
