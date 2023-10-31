@@ -22,19 +22,41 @@ Akash Juwadi - A16372772
 
 ## Question 2
 
-Code: Load packages and dataset,generate variables, summarize data.
+Code: Load packages and dataset, generate variables, summarize data.
 
 Verbal: Interpret the summary statistics.
+
+The summary statistics show a seemingly near population pool of survey answers, except there is a slight weight towards female answers, as the population split of male/female in the US is closer to 49/51% as opposed to the 43/57% split in the dataset. The dummy variables we generated for fair and poor health show that 16% of the survey judge themselves in this classification. It is worth nothing that this percent is near and above the range of percentage answers for diabetic(12%) and alcohol use(11%).
 
 ```{r message=FALSE, warning=FALSE}
 # The PDF will show the code you write here but not the output.
 # Load packages and dataset, generate variables here.
+library(tidyverse)
+library(fixest)
+
+view(nhis2010)
+load(url("https://github.com/tvogl/econ121/raw/main/data/nhis2010.Rdata"))
+#load("C:/Users/hp/Documents/GitHub/econ121/data/nhis2010.Rdata")
+
+# drop observations with health missing/NA.
+nhis2010 <- nhis2010 %>% drop_na(health)
+
+# generate a variable that equals one if fair or poor health, zero otherwise.
+table(nhis2010$health)
+nhis2010$health_dummy <- ifelse(nhis2010$health %in% c("Fair", "Poor"), 1, 0)
+
+#the sum of Fair and Poor should be the same as 1
+table(nhis2010$health_dummy)
+
 
 ```
 
 ```{r echo=TRUE}
 # The PDF will show the code AND output here.
 # Summarize the data here.
+summary(nhis2010)
+
+
 
 ```
 
@@ -46,8 +68,28 @@ Code: Draw graph with two line plots.
 
 Verbal: Interpret.
 
+Risk of death for both categories go up with age, however the greatest difference of mortality between the self-reported health groups is more pronounced between ages 40 and 80, with a clear observation of lower risk of death among those with self-reported good-to-excellent health. In the beginning and end of the data, both groups have very similar mortality rates.
+
 ```{r echo=TRUE}
 # All question 3 code here.
+
+# Compute mortality rates by age for both groups
+mortality_data <- nhis2010 %>%
+  drop_na(age, mort)%>%
+  group_by(health_dummy, age) %>%
+  summarise(mortality_rate = sum(mort) / n())
+
+# Create separate line plots for the two groups
+ggplot(mortality_data, aes(x = age, y = mortality_rate, color = factor(health_dummy))) +
+  geom_line() +
+  labs(
+    x = "Age",
+    y = "Mortality Rate",
+    title = "Mortality Rate by Age for Different Health Groups",
+    color = "Health Group"
+  )
+
+
 
 ```
 
