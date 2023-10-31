@@ -1,8 +1,5 @@
 # This example studies the relationship between low birth weight and test scores
 
-# uncomment to install plm package, which contains panel data models
-# install.packages("plm")
-
 # clear environment and load packages
 rm(list=ls())
 library(tidyverse)
