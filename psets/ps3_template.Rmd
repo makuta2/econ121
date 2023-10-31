@@ -1,0 +1,106 @@
+---
+title: "ECON 121 FA23 Problem Set 3"
+author: "Your name"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) # sets the code chunk format
+rm(list = ls()) # clears the environment
+```
+
+## Question 1
+
+Verbal: list group members.
+
+\newpage
+
+## Question 2
+
+Code: Load packages and dataset,generate variables, summarize data.
+
+Verbal: Interpret the summary statistics.
+
+```{r message=FALSE, warning=FALSE}
+# The PDF will show the code you write here but not the output.
+# Load packages and dataset, generate variables here.
+
+```
+
+```{r echo=TRUE}
+# The PDF will show the code AND output here.
+# Summarize the data here.
+
+```
+
+\newpage
+
+## Question 3
+
+Code: Draw graph with two line plots.
+
+Verbal: Interpret.
+
+```{r echo=TRUE}
+# All question 3 code here.
+
+```
+
+\newpage
+
+## Question 4
+
+Code: Draw bar graphs.
+
+Verbal: Interpret your results.
+
+```{r echo=TRUE}
+# All question 4 code here
+
+```
+
+\newpage
+
+## Question 5
+
+Code: Estimate regressions.
+
+Verbal: Interpret and compare.
+
+```{r echo=TRUE}
+# All question 5 code here
+
+```
+
+\newpage
+
+## Question 6
+
+Code: Use the results from the mortality logit model to compare the two groups.
+
+Verbal: Interpret your results.
+
+```{r echo=TRUE}
+# All question 6 code here
+
+```
+
+\newpage
+
+## Question 7
+
+Verbal: Assess causality.
+
+\newpage
+
+## Question 8
+
+Code: Assess how much health behavior can explain the mortality logit results.
+
+Verbal: Interpret your results.
+
+```{r echo=TRUE}
+# All question 8 code here
+
+```
+

@@ -1,5 +1,5 @@
 ---
-title: "ECON 121 FA23 Problem Set 1"
+title: "ECON 121 FA23 Problem Set 2"
 author: "Your name"
 output: pdf_document
 ---
