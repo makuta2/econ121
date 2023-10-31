@@ -13,8 +13,8 @@ rm(list = ls()) # clears the environment
 
 Verbal: list group members.
 Robert Tso - A13829791
-Tomas Lopez - 
-Stephanie Nguyen - 
+Tomas Lopez - A16798775
+Stephanie Nguyen - A16215540
 Akash Juwadi - A16372772
 
 \newpage
