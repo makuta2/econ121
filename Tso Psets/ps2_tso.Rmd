@@ -12,16 +12,20 @@ rm(list = ls()) # clears the environment
 ## Question 1
 
 Verbal: list group members.
+
 Robert Tso - A13829791
-Tomas Lopez - 
-Stephanie Nguyen - 
+
+Tomas Lopez - A16215540
+
+Stephanie Nguyen - A16798775
+
+Akash Juwadi - A16372772
 
 \newpage
 
 ## Question 2
 
-Beta_0 is the intercept of the formula
-Beta_1 is the coefficient for the level of education
+Beta_0 is the intercept of the formula. Beta_1 is the coefficient that indicates the hourly wage return for each increase in level of education. Experience squared makes total experience a quadratic and looks to see if "excess" experience is a detriment to hourly wage, such as being too old or not having enough education.
 
 \newpage
 
@@ -31,10 +35,16 @@ Code: Load packages and dataset, modify sample, generate variables, summarize da
 
 Verbal: Interpret the summary statistics.
 
+The data's median is a 43 year old white male with 12 years of education, there is not much skew in the age and education. The max annual hours worked is over 4 times the median, and considering that the max and min weeks worked is only 2 apart
+
 ```{r message=FALSE, warning=FALSE}
 # The PDF will show the code you write here but not the output.
 # Load packages and dataset, modify sample, generate variables here.
 library(tidyverse)
+library(fixest)
+library(car)
+
+
 ```
 
 ```{r echo=TRUE}
@@ -42,7 +52,9 @@ library(tidyverse)
 # Summarize the data here.
 load("D:/Documents/Class/Econ 121/econ121/data/cps18.Rdata")
 summary(cps18)
-#drop rows with fewer than 50 weeks, worked fewer than 35 hours in a typical week, or has 0 dollars in annual earnings
+
+#drop rows with fewer than 50 weeks, worked fewer than 35 hours in a typical week, 
+#or has 0 dollars in annual earnings
 cps <- cps18 %>% 
   filter(
   wkswork>=50 &
@@ -50,11 +62,13 @@ cps <- cps18 %>%
   incwage > 0
   )
   
+#calculate annual hours and hourly wage
+annual_hours <- cps$wkswork*cps$hrs_per_wk
+hr_wage <- cps$incwage/annual_hours
+
 #add log hourly wage variable
  cps <- cps%>%
   mutate(
-    annual_hours=wkswork*hrs_per_wk,
-    hr_wage=incwage/annual_hours,
     log_hr_wage=log(hr_wage)
   )
  
@@ -82,8 +96,9 @@ cps <- cps %>%
         ed_hs_degree*12 + #completing high school is total 12 years
         ed_some_col*14 + #some college is 2 years or half for total 14
         ed_ba_degree*16 + #BA is 16 years total       
-        ed_post_degree*18 #post degree is 2 years for 18 total
+        ed_post_degree*20 #post degree is 2 years for 18 total
         )
+
 #generate exper = age - education - 5
 cps <- cps %>%
   mutate(exper = age - education - 5)
@@ -92,13 +107,9 @@ cps <- cps %>%
 cps <- cps %>%
   mutate(exper2 = exper^2)
 
-view(cps)
+#view(cps)
 summary(cps)
-#The data's median is a 43 year old white male with 12 years of education.
-#The oldest person 64 years old and given a maximum experience of 51, 
-#only has 8 years of education
-#The max annual hours worked is over 4 times the median, 
-#and considering that the max and min weeks worked is only 2 apart
+
 ```
 
 \newpage
@@ -109,8 +120,18 @@ Code: Estimate regression.
 
 Verbal: Interpret your results.
 
+{log_hr_wage = 1.190526 + 0.106590*education + 0.027118*exper - 0.000397*exper2 }
+
+Intercept only accounts for 1.190526 of the hourly wage, regardless of age, education or experience.Experience seems to have a relatively lower effect compared to education, but a reminder is that education is subtracted from age to get experience.Each year of Education has a 10.7% increase of hourly wage.
+
 ```{r echo=TRUE}
 # All question 4 code here
+# Define the Mincerian wage model
+
+mince_model <- feols(log_hr_wage ~ education + exper + exper2, data = cps)
+
+# Print the summary of the regression model
+summary(mince_model)
 
 ```
 
@@ -122,8 +143,24 @@ Code: Estimate regression.
 
 Verbal: Interpret your results.
 
+log_hr_wage = 1.029361 + 0.109797*education + 0.025147*exper - 0.000357*exper2	
+            - 0.158205*black - 0.109256*Native + 0.028961*Asian - 0.055523*Other
+            + 0.273182*male
+            
+Every year of Education is now 10.97% increase in wage, which is higher. 
+
+
+
 ```{r echo=TRUE}
 # All question 5 code here
+
+ext_mince_model <- feols(log_hr_wage ~ education + exper + exper2  
+                        + Black + Native + Asian + Other
+                        + male, data = cps)
+
+# Print the summary of the regression model
+summary(ext_mince_model)
+
 
 ```
 
@@ -135,8 +172,14 @@ Code: Assess statistical significance.
 
 Verbal: Interpret your results.
 
+The Z-value is 40.904, which is really high, therefore it is 
+statistically significant
+
+
 ```{r echo=TRUE}
 # All question 6 code here
+
+deltaMethod(ext_mince_model, "male - Black", rhs=0)
 
 ```
 
@@ -148,9 +191,20 @@ Code: Estimate regressions and assess significance of differences between them.
 
 Verbal: Interpret your results.
 
+The T-value for the two coefficients of male and female education is 2.300352, 
+which is statistically significant.
+
 ```{r echo=TRUE}
 # All question 7 code here
 
+gender_mince_model <- feols(log_hr_wage ~ education + exper + exper2  
+                        + Black + Native + Asian + Other,
+                        data = cps, split = ~male)
+
+gender_mince_model
+
+#testing coefficients for education
+(0.112598 - 0.107783)/sqrt((0.001547^2) + (0.001410^2))
 ```
 
 \newpage
@@ -161,8 +215,61 @@ Code: Estimate regression, use delta method.
 
 Verbal: Interpret your results.
 
+The difference between the coefficients for male education and female education is 
+0.004815, which is exactly the coefficient of malexedu 0.004816.
+
+Education, Experience, Exper2, and Black are the only ratios that are 
+statistical significant from 1.
+
+
 ```{r echo=TRUE}
 # All question 8 code here
+
+#building the interaction terms
+cps_interactions <- mutate(cps, malexedu = male*education,
+                                malexexper = male*exper,
+                                malexexper2 = male*exper2,
+                                blackmale = male*Black,
+                                nativemale = male*Native,
+                                asianmale = male*Asian,
+                                othermale = male*Other)
+
+#building extended mincerian model with interaction terms
+ext_gender_mince_model <- feols(log_hr_wage ~ education + exper + exper2  
+                        + Black + Native + Asian + Other + male
+                        + malexedu + malexexper + malexexper2 
+                        + blackmale + nativemale 
+                        + asianmale + othermale,
+                        data = cps_interactions)
+
+summary(ext_gender_mince_model)
+summary(gender_mince_model)
+
+#extended mince model for 
+female_mince_model <- feols(log_hr_wage ~ education + exper + exper2  
+                        + Black + Native + Asian + Other,
+                        data = cps,  subset = ~male==0)
+
+male_mince_model <- feols(log_hr_wage ~ education + exper + exper2  
+                        + Black + Native + Asian + Other,
+                        data = cps,  subset = ~male==1)
+
+#deltaMethod test for each variable between male and female
+deltaMethod(ext_gender_mince_model,"education/(education + malexedu)",RHS=1)
+deltaMethod(ext_gender_mince_model,"exper/(exper + malexexper)",RHS=1)
+deltaMethod(ext_gender_mince_model,"exper2/(exper2 + malexexper2)",RHS=1)
+
+deltaMethod(ext_gender_mince_model,"Black/(Black + blackmale)",RHS=1)
+
+deltaMethod(ext_gender_mince_model,"Native/(Native + nativemale)",RHS=1)
+deltaMethod(ext_gender_mince_model,"Asian/(Asian + asianmale)",RHS=1)
+deltaMethod(ext_gender_mince_model,"Other/(Other + othermale)",RHS=1)
+
+
+#divide the coefficients directly to get a ratio, but no staistical significance.
+coefficients(female_mince_model)/coefficients(male_mince_model)
+
+
 
 ```
 
@@ -174,8 +281,18 @@ Code: Load dataset, compute unweighted and weighted means.
 
 Verbal: Interpret your results.
 
+The summary gives us the mean of black at 0.2502 and mean of hisp at 0.1578. When weighed black mean is 0.1386967 and hisp mean is 0.063047. When accounting for sampling weights, the estimates bias would be reduced.
+
 ```{r echo=TRUE}
 # All question 9 code here
+
+load("D:/Documents/Class/Econ 121/econ121/data/nlsy79.Rdata")
+summary(nlsy79)
+#view(nlsy79)
+
+weighted.mean(nlsy79$black,w=nlsy79$perweight)
+weighted.mean(nlsy79$hisp,w=nlsy79$perweight)
+
 
 ```
 
@@ -187,8 +304,53 @@ Code: Modify sample, estimate unweighted and weighted regressions.
 
 Verbal: Assess unweighted versus weighted results.
 
+When we account for the sampling weights, the magnitudes of all coefficients 
+and intercepts EXCEPT for male, decrease, meanwhile male increases from 0.327012 to 0.390222.
+The swing of coefficients decreases from unweighted to weighted are marginal compared 
+to the swing of coefficient increase for male.
+
+We decided to stick with the unweighted dataset as the relatively drastic 
+increase of male coefficient takes away from the importance of the other variables
+
+
+
+
 ```{r echo=TRUE}
 # All question 10 code here
+
+#drop rows with fewer than 50 weeks times 35 hours = 1750 annual hours worked, 
+#or has 0 dollars in annual earnings
+nlsy <- nlsy79 %>% 
+  filter(
+  hours18>=1750 &
+  laborinc18 > 0
+  )
+  
+#calculate hourly wage
+hr_wage_79 <- nlsy$laborinc18/nlsy$hours18
+
+#add log hourly wage variable
+ nlsy <- nlsy%>%
+  mutate(
+    log_hr_wage=log(hr_wage_79)
+  )
+
+#generate exper = age - education - 5
+nlsy <- nlsy %>%
+  mutate(exper = age79 - educ - 5)
+
+#generate exper2 = exper^2
+nlsy <- nlsy %>%
+  mutate(exper2 = exper^2)
+ 
+ 
+summary(nlsy)
+
+unweigh_nlsy = feols(log_hr_wage ~ educ + exper + exper2 + male + black + hisp, data = nlsy)
+weighed_nlsy = feols(log_hr_wage ~ educ + exper + exper2 + male + black + hisp, data = nlsy, weights = ~perweight)
+
+unweigh_nlsy
+weighed_nlsy
 
 ```
 
@@ -198,11 +360,28 @@ Verbal: Assess unweighted versus weighted results.
 
 Verbal answer only, no code.
 
+The coefficients for education and experience are different, CPS measures more impact from experience while nsly has more impact with education. Differences in coefficients should be expected as there are different explanatory variables that are not accounted in the mincerian equation from each respective dataset. For example nlsy parental data, sources of magazines, library, newspapers, which can supplement overall experience. There is also significant differences between the demographics of the datasets. The average age of CPS is 43 while for nsly it is 17, demonstrating a bias towards older and more established careers as someone who is 30+ may have more career opportunities than someone just graduating high school.
+
+```{r echo=TRUE}
+#comparing coefficients directly
+coefficients(ext_mince_model)
+coefficients(unweigh_nlsy)
+
+#comparing data summaries
+summary(cps)
+summary(nlsy)
+
+```
+
 \newpage
 
 ## Question 12
 
 Verbal answer only, no code.
+
+It is not a guarantee that education is a causal effect on hourly wages. As we have columns for childhood environment that affect a child's propensity for education, such as access to a library and educated parents. Any of these variables may possibly be the true causal effect that affect the education coefficient. 
+
+
 
 \newpage
 
@@ -212,8 +391,37 @@ Code: Estimate regression.
 
 Verbal: Explain choice of covariates, interpret results.
 
+At first glance AFQT may seem important as it measures job qualifications, however AFQT contains some overlaps with an IQ test, so it may just be a redundant approximation for education. We can observe that the education coefficient drops when accounting for afqt. Similarly the value of education from mom and dad have a positive impact at a marginal cost of the education coefficient, as parents that value education would probably impart that value onto their child, or at the very least force them to go to school regardless. When accounting for all 3 of these variables, education coefficient drops even more, indicating an importance to control AFQT as it is responsible for the largest swing.
+
 ```{r echo=TRUE}
 # All question 13 code here
+
+AFQT_nlsy = feols(log_hr_wage ~ educ + exper + exper2 
+                              + male + black + hisp
+                              + afqt81,
+                                data = nlsy)
+
+dad_nlsy = feols(log_hr_wage ~ educ + exper + exper2 
+                              + male + black + hisp
+                              + educ_dad,
+                                data = nlsy)
+
+mom_nlsy = feols(log_hr_wage ~ educ + exper + exper2 
+                              + male + black + hisp
+                              + educ_mom,
+                                data = nlsy)
+
+all_nsly = feols(log_hr_wage ~ educ + exper + exper2 
+                              + male + black + hisp
+                              + afqt81 + educ_dad + educ_mom,
+                                data = nlsy)
+
+coefficients(unweigh_nlsy)
+coefficients(AFQT_nlsy)
+coefficients(dad_nlsy)
+coefficients(mom_nlsy)
+coefficients(all_nsly)
+
 
 ```
 
