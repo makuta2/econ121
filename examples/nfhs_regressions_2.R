@@ -15,6 +15,7 @@ load(url("https://github.com/tvogl/econ121/raw/main/data/nfhs4.Rdata"))
 
 # filter data to include only 20-80 year old household heads
 nfhs4 <- filter(nfhs4, age >= 20 & age <= 80)
+view(nfhs4)
 
 # we left off with estimates of a single slope, # as a summary of a population 
 # pattern. recall that we used sampling weights, to ensure that the estimates
