@@ -177,7 +177,7 @@ statistically significant
 ```{r echo=TRUE}
 # All question 6 code here
 
-deltaMethod(ext_mince_model, "male - Black", rhs=0)
+deltaMethod(ext_mince_model, "male + Black", rhs=0)
 
 ```
 

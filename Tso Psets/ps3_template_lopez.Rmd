@@ -1,0 +1,341 @@
+---
+title: "ECON 121 FA23 Problem Set 3"
+author: "Tomas Lopez"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) # sets the code chunk format
+rm(list = ls()) # clears the environment
+```
+
+## Question 1
+
+Verbal: list group members.
+
+\newpage
+
+## Question 2
+
+Code: Load packages and dataset,generate variables, summarize data.
+
+Verbal: The mean age of respondednts to the NHS is about 51, with the median
+being 49. This is a weighted sample where weights are given to those with less
+common attributes of race marital status etc. The sample is made up of primarily 
+white indviduals, at 57%.  It is also 43% Male and and 57% Female. 13% of the 
+sample died by 2019.
+
+```{r message=FALSE, warning=FALSE}
+# The PDF will show the code you write here but not the output.
+# Load packages and dataset, generate variables here.
+install.packages('mfx')
+install.packages('betareg')
+library(tidyverse)
+library(fixest)
+library(mfx)
+library(betareg)
+library(car)
+
+
+load(url("https://github.com/tvogl/econ121/raw/main/data/nhis2010.Rdata"))
+
+summary(nhis2010)
+
+nhis2010 <- nhis2010 %>% drop_na(health, mort)
+#dropping na values in health column
+
+#dummy var for fair and poor health condition
+table(nhis2010$health)
+nhis2010 <- nhis2010 %>%
+  mutate(poor_fair = case_when(
+    health == "Poor" ~ 1,   # if health status is poor
+    health == "Fair" ~ 1,   # if health status is fair 
+    TRUE ~ 0               # Default value if neither condition is met
+  ))
+table(nhis2010$poor_fair)
+
+
+
+
+
+```
+
+```{r echo=TRUE}
+# The PDF will show the code AND output here.
+summary(nhis2010)
+
+```
+
+\newpage
+
+## Question 3
+
+Code: Draw graph with two line plots.
+
+Verbal: The risk of death increases across the board by age, regardless of what
+an self individuals perceived health is.  However those who do percieve their 
+health worse are more likely to die than those who are in percieve themselves to
+be in better health, although the gap does level off at when looking aat ages 
+past 80.
+
+```{r echo=TRUE}
+# All question 3 code here.
+
+mortality_data <- nhis2010 %>%
+  drop_na(age, mort)%>%
+  group_by(poor_fair, age) %>%
+  summarise(mortality_rate = mean(mort))
+
+# Create separate line plots for the two groups
+ggplot(mortality_data, aes(x = age, y = mortality_rate, color = factor(poor_fair))) +
+  geom_line() +
+  labs(
+    x = "Age",
+    y = "Mortality Rate",
+    title = "Mortality Rate by Age for Different Health Groups",
+    color = "Health Group"
+  )
+
+
+```
+\newpage
+
+## Question 4
+
+Code: Draw bar graphs.
+
+Verbal:In graph (a) the percentage of poor or fair health self reported 
+individuals decreases with income, that is family income and self reported 
+health are negatively correlated.  In graph (b), we see a negative correlation 
+between education level and individuals who self report poor or fair health.
+
+```{r echo=TRUE}
+# All question 4 code here
+
+#dropping na vals of income
+income_poor_fair_no_na <- nhis2010 %>% drop_na(incfam)
+
+#grouping by income and then taking a percentage of those poor_fair in each
+#income bracket
+
+income_poor_fair <- income_poor_fair_no_na %>%
+  group_by(incfam) %>%
+  summarise(percent_fair_poor = sum(poor_fair) / n())
+
+print(income_poor_fair)
+
+
+
+# Create the bar graph using ggplot
+ggplot(income_poor_fair, aes(x = incfam, y = percent_fair_poor)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(
+    x = "Income Level",
+    y = "Percentage of Fair or Poor Health",
+    title = "Percentage of Fair or Poor Health by Income Level"
+  )
+
+
+#creating new column based on education 
+nhis2010 <- nhis2010 %>%
+  drop_na(edyrs) %>%
+  mutate(educational_attainment = case_when(
+    edyrs < 12 ~ "Less than High School Completion",
+    edyrs == 12 ~ "High School Completion",
+    edyrs >= 13 & edyrs <= 15 ~ "Some College",
+    edyrs == 16 ~ "College Completion",
+    edyrs > 16 ~ "Post-graduate Study",
+  ))
+view(nhis2010)
+edyrs_no_na <- nhis2010 %>% drop_na(edyrs)
+
+#grouping by income and then taking a percentage of those poor_fair in each
+#income bracket
+
+edyrs_poor_fair <- edyrs_no_na %>%
+  group_by(educational_attainment) %>%
+  summarise(percent_edyrs_pf = sum(poor_fair) / n())
+
+print(edyrs_poor_fair)
+
+ggplot(edyrs_poor_fair, aes(x = educational_attainment, y = percent_edyrs_pf)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(
+    x = "Education",
+    y = "Percentage of Fair or Poor Health",
+    title = "Percentage of Fair or Poor Health by Income Level"
+  )+ theme(axis.text.x = element_text(size = 6))
+
+```
+
+\newpage
+
+## Question 5
+
+Code: Estimate regressions.
+
+Verbal: We expect post graduate to be the least likely group to have poor or fair health,
+as well as lowest mortaility odds. Comparing across the three modesl OLS is clearly
+the worst, it reports negative values for mortality, which not interpretable.
+Looking at the odds ratio, all income levels higher than 35k there are lower odds of mortality and poor or 
+fair self reported health, when looking at education levels lower than college completion, we
+see higher odds of mortality and poor or fair self reported health. Amongst, 
+Hispanics and Asians show lower odds of mortality relative white people, when
+looking at Blacks and Others they show higher odds of poor and fair health 
+relative to white people.
+
+```{r echo=TRUE}
+# All question 5 code here
+#ols linear model
+
+nhis2010 <- nhis2010 %>%
+  drop_na(incfam,age,educational_attainment,black,hisp,asian,other)
+
+ols_model_pf <- feols(poor_fair ~  incfam+ age + educational_attainment + black + hisp + asian + other, 
+                   data = nhis2010, 
+                   vcov = 'hetero')
+nhis2010$ols_predict_pf <- predict(ols_model_pf, nhis2010, type="response")
+
+ols_model_mort <- feols(mort ~  incfam+ age + educational_attainment + black + hisp + asian + other, 
+                   data = nhis2010, 
+                   vcov = 'hetero')
+nhis2010$ols_predict_mort <- predict(ols_model_mort, nhis2010, type="response")
+
+probit_model_pf <- feglm(poor_fair ~  incfam+ age + educational_attainment + black + hisp + asian + other, 
+                   data = nhis2010, 
+                   vcov = 'hetero',
+                   family = 'probit')
+
+nhis2010$probit_predict_pf <- predict(probit_model_pf, nhis2010, type="response")
+
+probit_model_mort <- feglm(mort ~ incfam+ age + educational_attainment + black + hisp + asian + other, 
+                   data = nhis2010, 
+                   vcov = 'hetero',
+                   family = 'probit')
+nhis2010$probit_predict_mort <- predict(probit_model_mort, nhis2010, type="response")
+
+
+
+logit_model_pf <- feglm(poor_fair ~  incfam+ age + educational_attainment + black + hisp + asian + other, 
+                   data = nhis2010, 
+                   vcov = 'hetero',
+                   family = 'logit')
+nhis2010$logit_predict_pf <- predict(logit_model_pf, nhis2010, type="response")
+
+
+logit_model_mort <- feglm(mort ~  incfam+ age + educational_attainment + black + hisp + asian + other, 
+                   data = nhis2010, 
+                   vcov = 'hetero',
+                   family = 'logit')
+nhis2010$logit_predict_mort <- predict(logit_model_mort, nhis2010, type="response")
+
+
+ols_model_pf
+probit_model_pf
+logit_model_pf
+
+
+summary(nhis2010$ols_predict_pf)
+summary(nhis2010$logit_predict_pf)
+summary(nhis2010$probit_predict_pf)
+summary(nhis2010$poor_fair)
+
+summary(nhis2010$ols_predict_mort)
+summary(nhis2010$logit_predict_mort)
+summary(nhis2010$probit_predict_mort)
+summary(nhis2010$mort)
+
+
+
+#marginal effect of IVs for poor and fair health using logit
+logitmfx(poor_fair ~  incfam+ age + educational_attainment + black + hisp + asian + other, 
+                   data = nhis2010, 
+                  atmean = TRUE, 
+                  robust = TRUE)
+#marginal effect of IVs for poor and fair healt usin probit
+probitmfx(poor_fair ~  incfam+ age + educational_attainment + black + hisp + asian + other,  
+                   data = nhis2010, 
+                  atmean = TRUE, 
+                  robust = TRUE)
+
+#marginal effect of IVs for mortality using logit
+logitmfx(mort ~  incfam+ age + educational_attainment + black + hisp + asian + other, 
+                   data = nhis2010, 
+                  atmean = TRUE, 
+                  robust = TRUE)
+#marginal effect of IVs for poor and fair healt usin probit
+ probitmfx(mort ~  incfam+ age + educational_attainment + black + hisp + asian + other, 
+                   data = nhis2010, 
+                  atmean = TRUE, 
+                  robust = TRUE)
+ 
+ 
+ #odds ratio of logit mortality
+logitor(mort ~incfam+ age + educational_attainment + black + hisp + asian + other, 
+        data = nhis2010, 
+        robust = TRUE)
+
+#odds ratio of logit poor or fair health
+logitor(poor_fair ~incfam+ age + educational_attainment + black + hisp + asian + other, 
+        data = nhis2010, 
+        robust = TRUE)
+
+
+view(nhis2010)
+
+
+```
+
+\newpage
+
+## Question 6
+
+Code: Use the results from the mortality logit model to compare the two groups.
+
+Verbal: Group A is worse off in terms of mortality, we expect this since the key
+predictors from question 5 are education and income, NOT race.  To improve we 
+could include interaction terms, 
+
+```{r echo=TRUE}
+# All question 6 code here
+
+-0.02801763 
+0.02532388
+coef(logit_model_mort)
+
+
+#Group A is an asian adult with less than 12 years or education and fam income less the 35k
+print(-0.580831612  #asian coef
+      +0.417197392 #less than 12 years edu
+      +0)
+
+# Group B: Black adults with 16 years of education and family incomes over $100k
+print( -0.003323531 #black coef
+      +0.054397497 # 16 or more years edu
+      -0.755473560 ) #family income over 100k
+
+
+
+
+
+```
+
+\newpage
+
+## Question 7
+
+Verbal: Assess causality.
+
+\newpage
+
+## Question 8
+
+Code: Assess how much health behavior can explain the mortality logit results.
+
+Verbal: Interpret your results.
+
+```{r echo=TRUE}
+# All question 8 code here
+
+```
+
