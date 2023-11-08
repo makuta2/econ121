@@ -16,7 +16,7 @@ library(tidyverse)
 library(fixest)
   
 # Load the dataset
-load(url("https://github.com/tvogl/econ121/raw/main/data/wfh_china.Rdata"))
+load(url("https://github.com/tvogl/econ121/raw/main/data/wfh.Rdata"))
 
 # Drop obs with missing calls data
 wfh_china <- wfh_china %>% drop_na(calls)
