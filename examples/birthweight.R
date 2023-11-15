@@ -1,8 +1,5 @@
 # This example studies the relationship between low birth weight and test scores
 
-# uncomment to install plm package, which contains panel data models
-# install.packages("plm")
-
 # clear environment and load packages
 rm(list=ls())
 library(tidyverse)
@@ -23,6 +20,11 @@ nlsy_kids$bw <- exp(nlsy_kids$lnbw)
 # For reference, below 88 ounces is considered low birth weight,
 # and below 53 ounces is very low birth weight.
 summary(nlsy_kids$bw)
+
+# More information on the quantiles of bw
+quantile(nlsy_kids$bw, 
+         probs = c(.01, .05, .1, .25, .5, .75, .9, .95, .99),
+         na.rm = TRUE)
 
 # Let's give ourselves a sense of how birth weight relates to the
 # composite test score by plotting mean test scores by birthweight.
@@ -47,7 +49,7 @@ nlsy_kids %>%
 # due to family characteristics? Let's generate separate
 # plots for mothers with <12, 12, and >12 years of schooling.
 nlsy_kids %>%
-  drop_na(bw_bin, comp_score_11to14, momed) %>%
+  drop_na(bw, comp_score_11to14, momed) %>%
   mutate(momedlevel = case_when(momed<12 ~ "<HS",
                                 momed==12 ~ "HS",
                                 momed>12 ~ ">HS"),
@@ -81,11 +83,14 @@ nlsy_kids %>%
 # OLS with robust standard errors
 feols(comp_score_11to14 ~ vlow_bw, data = nlsy_kids, vcov = 'hetero')
 
-# OLS with clustered standard errors -- this is correct
+# OLS with clustered standard errors -- this is the correct standard error
 feols(comp_score_11to14 ~ vlow_bw, data = nlsy_kids, vcov = ~mom_id)
-# SEs are a little larger when we take into account intrafamily correlation
+# SEs are a little larger when we take into account intrafamily correlation.
+# But we are still concerned that by including between-family variation
+# in our estimation, the coefficient on vlow_bw may be biased.
 
-# Between effects
+# First, let's look at the "between" variation - the
+# between effects model.
 # Let's first create a data frame of family averages
 nlsy_families <-
   nlsy_kids %>%
@@ -97,7 +102,8 @@ nlsy_families <-
 feols(mean_test ~ mean_vlow_bw, data = nlsy_families, vcov = 'hetero')
 # The "between" estimate is very similar to the pooled estimate above
 
-# Fixed effects (for mom_id)
+# Now let's look at the "within" variation - the fixed
+# effects model:
 feols(comp_score_11to14 ~ vlow_bw | mom_id, data = nlsy_kids)
 # The estimated coefficient shrinks by about 1/3, consistent with upward bias  
 # from between-family variation.
