@@ -177,7 +177,8 @@ Code: Estimate regressions.
 
 Verbal: Interpret and compare.
 
-Based on the summary statistics OLS does not look like a good predictive model because it has negative values on the lower end of the model. It also has a dampened maximum value at close to 50%, compared to the 66-70%+ of logit and probit. 
+We decided to categorize Education Categories and Income brackets into dummy variables since it would be easier to interact with them later in the project. Age felt appropriate to keep as a linear value since people of the same education bracket could have a wide variance of age that might be lost if binned incorrectly.
+Based on the summary statistics OLS does not look like a good predictive model because it has negative values on the lower end of the model. It also has a dampened maximum value at close to 50%, compared to the 66-70%+ of logit and probit, which both are very similar.
 
 ```{r echo=TRUE}
 # All question 5 code here
@@ -288,24 +289,28 @@ nhis2010 %>%
   summary()
 
 #marginal effect of IVs for poor and fair health using logit
-logitmfx(health_dummy ~  incfam + age + education_category + black + hisp + asian + other, 
-                   data = nhis2010, 
-                  atmean = TRUE, 
-                  robust = TRUE)
+logitmfx(health_dummy ~  incfam + age + education_category +
+                          black + hisp + asian + other, 
+                          data = nhis2010, 
+                          atmean = TRUE, 
+                          robust = TRUE)
 #marginal effect of IVs for poor and fair health using probit
-probitmfx(health_dummy ~  incfam + age + education_category + black + hisp + asian + other,  
-                   data = nhis2010, 
-                  atmean = TRUE, 
-                  robust = TRUE)
-
+probitmfx(health_dummy ~  incfam + age + education_category + 
+                          black + hisp + asian + other,  
+                          data = nhis2010, 
+                          atmean = TRUE, 
+                          robust = TRUE)
+      
 #marginal effect of IVs for mortality using logit
-logitmfx(mort ~  incfam + age + education_category + black + hisp + asian + other, 
-                   data = nhis2010, 
+logitmfx(mort ~  incfam + age + education_category + 
+                  black + hisp + asian + other, 
+                  data = nhis2010, 
                   atmean = TRUE, 
                   robust = TRUE)
 #marginal effect of IVs for poor and fair healt usin probit
- probitmfx(mort ~  incfam + age + education_category + black + hisp + asian + other, 
-                   data = nhis2010, 
+ probitmfx(mort ~ incfam + age + education_category + 
+                  black + hisp + asian + other, 
+                  data = nhis2010, 
                   atmean = TRUE, 
                   robust = TRUE)
  
@@ -353,7 +358,8 @@ logit_model_mort
 deltaMethod(logit_model_mort,"(asian + LessHS + Low) - (black + ColGrad)",rhs=0)
 
 #manually
-#Group A is an asian adult with less than 12 years or education and family income less the 35k
+#Group A is an asian adult with less than 12 years 
+#or education and family income less the 35k
 GroupA <- (-0.580831612  #asian coef
           +0.755474   #less than $35k
           +0.362800)	 #less than 12 years edu
@@ -385,25 +391,13 @@ Code: Assess how much health behavior can explain the mortality logit results.
 
 Verbal: Interpret your results.
 
-When measured separately, being Uninsured has a coefficient of -0.074457 while smoking has a coefficient of 0.544864. Measured together uninsured is -0.101424 and smoking is 0.544725, showing that smoking has a relatively large increase in mortality, while being uninsured has a lower, but negative effect. Using the odds ratio we see that smoking has  1.7241335, which means smoking has a 72% higher likelihood of mortality versus those that do not smoke. Similarly being uninsured has a 10% higher likelihood of mortality. 
+Smoking has a coefficient of 0.544864, which is a higher coefficient than age, the education dummies, and all the income dummies except Low income. This is interesting as it implies it is better to be a smoker than having Low family income. when looking at the rate of occurrences, being either of the two each 41%+, but being both is 19.4% so close to half of all Smokers are of Low income and also half of all Low income are Smokers, which  indicate that the Smoker mortality effects may contain the Low Income effects, or vice versa. Using the odds ratio we see that smoking has  1.7241335, which means smoking has a 72% higher likelihood of mortality versus those that do not smoke.
 
 ```{r echo=TRUE}
-# All question 8 code here
+# All question 8 code her
 
-#model for uninsured on mortality
-logit_model_uninsur <- feglm(mort ~  age + uninsured + 
-                            Low + LowMed + Med + MedHigh + High +
-                            LessHS + HsGrad + SomeCol + ColGrad + PostGrad +
-                            black + hisp + asian + other, 
-                            data = nhis2010, 
-                            vcov = 'hetero',
-                            family = 'logit')
-#odds ratio of logit uninsured
-logitor(logit_model_uninsur, 
-        data = nhis2010, 
-        robust = TRUE)
-
-logit_model_uninsur
+nhis2010 <- nhis2010 %>% 
+  drop_na((smokev))
 
 #model for smoking on mortality
 logit_model_smoke <- feglm(mort ~  age + smokev + 
@@ -413,27 +407,51 @@ logit_model_smoke <- feglm(mort ~  age + smokev +
                             data = nhis2010, 
                             vcov = 'hetero',
                             family = 'logit')
-#odds ratio of logit drinking
+#odds ratio of logit smoking
 logitor(logit_model_smoke, 
         data = nhis2010, 
         robust = TRUE)
 
 logit_model_smoke
 
-#model for uninsured and smoking on mortality
-logit_model_unsur_smoke <- feglm(mort ~  age + uninsured + smokev + 
-                            Low + LowMed + Med + MedHigh + High +
-                            LessHS + HsGrad + SomeCol + ColGrad + PostGrad +
-                            black + hisp + asian + other, 
-                            data = nhis2010, 
-                            vcov = 'hetero',
-                            family = 'logit')
-logitor(logit_model_unsur_smoke, 
-        data = nhis2010, 
-        robust = TRUE)
+#looking at the percent of people in the survey that smoke and/or are low income
+# nhis2010 %>%
+#   filter(Low*smokev==1) %>%
+#   count()/count(nhis2010)
+# 
+# nhis2010 %>%
+#   filter(Low==1) %>%
+#   count()/count(nhis2010)
+# 
+# nhis2010 %>%
+#   filter(Low==1,smokev==0) %>%
+#   count()/count(nhis2010)
+# 
+# 
+# nhis2010 %>%
+#   filter(smokev==1) %>%
+#   count()/count(nhis2010)
+# 
+# nhis2010 %>%
+#   filter(Low==0,smokev==1) %>%
+#   count()/count(nhis2010)
 
-logit_model_unsur_smoke
+#19.4% are low income and smoke
+#42.1% are Low income
+#22.7% are Low income, don't smoke
+#41.1% smoke.
+#22.7% smoke, not Low income.
 
+
+# Create a table of Low income and smoking combinations
+combination_table <- table(nhis2010$Low, nhis2010$smokev)/nrow(nhis2010)
+
+# Add row and column names for clarity
+rownames(combination_table) <- c("LowIncome (No)", "LowIncome (Yes)")
+colnames(combination_table) <- c("Smoking (No)", "Smoking (Yes)")
+
+# Print the combination table
+print(combination_table)
 
 ```
 
