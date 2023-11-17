@@ -1,0 +1,164 @@
+---
+title: "ECON 121 FA23 Problem Set 4"
+author: "Robert Tso"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) # sets the code chunk format
+rm(list = ls()) # clears the environment
+```
+
+## Question 1
+
+Verbal: list group members.
+
+Robert Tso - A13829791
+
+Tomas Lopez - A16798775
+
+Stephanie Nguyen - A16215540
+
+Akash Juwadi - A16372772
+
+\newpage
+
+## Question 2
+
+Code: Load packages and dataset, summarize data.
+
+Verbal: Interpret the summary statistics.
+
+
+
+
+```{r message=FALSE, warning=FALSE}
+# The PDF will show the code you write here but not the output.
+# Load packages and dataset here.
+
+rm(list=ls())
+library(tidyverse)
+library(fixest)
+
+load(url("https://github.com/tvogl/econ121/raw/main/data/nlsy_kids.Rdata"))
+
+
+```
+
+```{r echo=TRUE}
+# The PDF will show the code AND output here.
+# Summarize the data here.
+
+
+
+#looking at the amount of missing data to determine which ones are worth dropping.
+colSums(is.na(nlsy_kids))/nrow(nlsy_kids)
+#ppvt_3 is missing 80%+, dropping would result in most of the data being missing
+
+nlsy_kids<-nlsy_kids %>% drop_na(lninc_0to3, momed, lnbw, 
+                      comp_score_5to6 ,learndis)
+
+view(nlsy_kids)
+ 
+summary(nlsy_kids)
+
+
+```
+
+\newpage
+
+## Question 3
+
+Code: Regression.
+
+Verbal: Interpret.
+
+```{r echo=TRUE}
+# All question 3 code here.
+
+```
+
+\newpage
+
+## Question 4
+
+Code: Regression.
+
+Verbal: Interpret.
+
+```{r echo=TRUE}
+# All question 4 code here
+
+```
+
+\newpage
+
+## Question 5
+
+Code: Regression.
+
+Verbal: Interpret.
+
+```{r echo=TRUE}
+# All question 5 code here
+
+```
+
+\newpage
+
+## Question 6
+
+Code: Regression.
+
+Verbal: Interpret.
+
+```{r echo=TRUE}
+# All question 6 code here
+
+```
+
+\newpage
+
+## Question 7
+
+Code: Regressions.
+
+Verbal: Interpret.
+
+```{r echo=TRUE}
+# All question 7 code here
+
+```
+
+\newpage
+
+## Question 8
+
+Code: Regressions.
+
+Verbal: Interpret.
+
+```{r echo=TRUE}
+# All question 8 code here
+
+```
+
+\newpage
+
+## Question 9
+
+Code: Analysis of heterogeneity.
+
+Verbal: Interpret.
+
+```{r echo=TRUE}
+# All question 9 code here
+
+```
+
+\newpage
+
+## Question 9
+
+Verbal: Policy implications.
+
