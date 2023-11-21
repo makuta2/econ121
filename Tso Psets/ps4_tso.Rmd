@@ -29,7 +29,7 @@ Code: Load packages and dataset, summarize data.
 
 Verbal: Interpret the summary statistics.
 
-
+Notable mean differences between the headstart participating children are sibdiff of 0.350750326, showing that children who are in headstart have a third likelihood to have siblings also in headstart. There are also 25% more black children but 4.7% less hispanic children. The largest impact is comp_score_5to6	with a mean difference of -5.560310055	and median difference of-6.0, showing that headstart children have lower test scores in this bracket. Logged income or lninc_0to3	with mean of -0.421336775	and median of -.5775361, showing that headstart children have 0.5	less logged income.
 
 
 ```{r message=FALSE, warning=FALSE}
@@ -59,8 +59,63 @@ nlsy_kids<-nlsy_kids %>% drop_na(lninc_0to3, momed, lnbw,
                       comp_score_5to6 ,learndis)
 
 view(nlsy_kids)
- 
+
 summary(nlsy_kids)
+
+
+nlsy_kids_HS <- subset(nlsy_kids, head_start == 1)
+nlsy_kids_NHS <- subset(nlsy_kids, head_start == 0)
+
+
+#comparing the difference of mean and median of the two subsets of head_start
+
+# Subset the dataset for head_start = 1
+subset_head_start_1 <- subset(nlsy_kids, head_start == 1)
+
+# Subset the dataset for head_start = 0
+subset_head_start_0 <- subset(nlsy_kids, head_start == 0)
+
+# Get the names of all variables in the dataset
+all_variables <- names(nlsy_kids)
+
+# Initialize vectors to store differences
+mean_differences <- c()
+median_differences <- c()
+
+# Loop through variables
+for (variable in all_variables) {
+  # Skip non-numeric variables
+  if (!is.numeric(nlsy_kids[[variable]])) {
+    next
+  }
+
+  # Calculate mean and median for head_start = 1
+  mean_head_start_1 <- mean(subset_head_start_1[[variable]])
+  median_head_start_1 <- median(subset_head_start_1[[variable]])
+
+  # Calculate mean and median for head_start = 0
+  mean_head_start_0 <- mean(subset_head_start_0[[variable]])
+  median_head_start_0 <- median(subset_head_start_0[[variable]])
+
+  # Calculate differences
+  mean_difference <- mean_head_start_1 - mean_head_start_0
+  median_difference <- median_head_start_1 - median_head_start_0
+
+  # Store differences in vectors
+  mean_differences <- c(mean_differences, mean_difference)
+  median_differences <- c(median_differences, median_difference)
+}
+
+# Create a data frame to display the results
+results <- data.frame(
+  Variable = all_variables,
+  MeanDifference = mean_differences,
+  MedianDifference = median_differences
+)
+
+# Print the results, head_start minus non_head_start
+print(results)
+
 
 
 ```
@@ -73,8 +128,19 @@ Code: Regression.
 
 Verbal: Interpret.
 
+Headstart has a -5.560 coefficient on test scores implying that by enrolling your child in a head start would result in a test score decrease by 5.6. With a t value of -4.888 the coefficient is statistically significant. It is reasonable to assume exogeneity, however it is likely there are omitted variables. We have to consider that the purpose of the headstart program is to help disadvantaged children with their education, so those enrolled in headstart may already have been on track to test lower scores down the line due to other environmental factors.
+
+
 ```{r echo=TRUE}
 # All question 3 code here.
+
+# Run OLS regression
+
+ols_model <- lm(comp_score_5to6 ~ head_start, data = nlsy_kids)
+summary(ols_model)
+
+boxplot(comp_score_5to6 ~ head_start, data = nlsy_kids, main = "Comparison of Test Scores by Head Start Participation")
+
 
 ```
 
