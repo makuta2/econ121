@@ -128,7 +128,7 @@ Code: Regression.
 
 Verbal: Interpret.
 
-Headstart has a -5.560 coefficient on test scores implying that by enrolling your child in a head start would result in a test score decrease by 5.6. With a t value of -4.888 the coefficient is statistically significant. It is reasonable to assume exogeneity, however it is likely there are omitted variables. We have to consider that the purpose of the headstart program is to help disadvantaged children with their education, so those enrolled in headstart may already have been on track to test lower scores down the line due to other environmental factors.
+Headstart has a -5.560 coefficient on test scores implying that by enrolling your child in a head start would result in a test score decrease by 5.6. With a t value of -4.888 the coefficient is statistically significant. It is reasonable to assume exogeneity, however it is likely there are omitted variables. We have to consider that the purpose of the headstart program is to help disadvantaged children with their education, so those enrolled in headstart may already have been on track to test lower scores down the line due to other environmental factors. This bias may be causing the coefficient to be much lower than it could be, since as it currently stands, the treatment seems worse than the symptom.
 
 
 ```{r echo=TRUE}
@@ -139,7 +139,7 @@ Headstart has a -5.560 coefficient on test scores implying that by enrolling you
 ols_model <- lm(comp_score_5to6 ~ head_start, data = nlsy_kids)
 summary(ols_model)
 
-boxplot(comp_score_5to6 ~ head_start, data = nlsy_kids, main = "Comparison of Test Scores by Head Start Participation")
+#boxplot(comp_score_5to6 ~ head_start, data = nlsy_kids, main = "Comparison of Test Scores by Head Start Participation")
 
 
 ```
@@ -152,8 +152,24 @@ Code: Regression.
 
 Verbal: Interpret.
 
+The coefficient if still in the same order of magnitude and direction, but it has become larger in effect, -7.2604 compared to -5.560, showing that when accounting for the same family under the same mother, the effect has become stronger.
+
 ```{r echo=TRUE}
 # All question 4 code here
+
+
+# Create a new data frame with family-level means
+family_means <- nlsy_kids %>%
+  group_by(mom_id) %>%
+  summarise(mean_head_start = mean(head_start),
+            mean_test_scores = mean(comp_score_5to6))
+
+# Run OLS regression
+ols_model_family <- lm(mean_test_scores ~ mean_head_start, data = family_means)
+
+# Summarize the model
+summary(ols_model_family)
+
 
 ```
 
