@@ -21,6 +21,8 @@ Stephanie Nguyen - A16215540
 
 Akash Juwadi - A16372772
 
+ChatGPT
+
 \newpage
 
 ## Question 2
@@ -136,7 +138,7 @@ Headstart has a -5.560 coefficient on test scores implying that by enrolling you
 
 # Run OLS regression
 
-ols_model <- lm(comp_score_5to6 ~ head_start, data = nlsy_kids)
+ols_model <- feols(comp_score_5to6 ~ head_start, data = nlsy_kids)
 summary(ols_model)
 
 #boxplot(comp_score_5to6 ~ head_start, data = nlsy_kids, main = "Comparison of Test Scores by Head Start Participation")
@@ -165,7 +167,8 @@ family_means <- nlsy_kids %>%
             mean_test_scores = mean(comp_score_5to6))
 
 # Run OLS regression
-ols_model_family <- lm(mean_test_scores ~ mean_head_start, data = family_means)
+ols_model_family <- feols(mean_test_scores ~ mean_head_start, 
+                          data = family_means)
 
 # Summarize the model
 summary(ols_model_family)
@@ -181,8 +184,16 @@ Code: Regression.
 
 Verbal: Interpret.
 
+By using OLS with fixed effects of mother ID, the coefficient of head start becomes positive with a magnitude similar to the one found in question 4. Under the assumption that the Head start program should improve test scores, we would take this coefficient to be one that most likely reflects the effect of the program, as in previous analyses it has been returning coefficients that seem counter-intuitive to the intentions of the treatment.
+
 ```{r echo=TRUE}
 # All question 5 code here
+
+ols_model_fe <- feols(comp_score_5to6 ~ head_start | mom_id, 
+                      data = nlsy_kids)
+summary(ols_model_fe)
+
+
 
 ```
 
@@ -194,8 +205,25 @@ Code: Regression.
 
 Verbal: Interpret.
 
+The coefficient of head start becomes negative again, but with a much smaller magnitude of 1.3095 demonstrating that when accounting for the ppvt test taken at age 3, head start has a much weaker predictive power on the age 5-6 test scores, and again has a negative effect as shown in questions 3 and 4. As the coefficient has swung to such a wide degree and has a standard error of 15 the robustness of the original regression may be called into question. When accounting separately for learning disability, robustness remains similar.
+
 ```{r echo=TRUE}
 # All question 6 code here
+
+ols_model_cov_ppvt <- feols(comp_score_5to6 ~ head_start + ppvt_3 | mom_id, 
+                      data = nlsy_kids, vcov = "hetero")
+
+ols_model_cov_learndis <- feols(comp_score_5to6 ~ head_start + learndis | mom_id, 
+                      data = nlsy_kids, vcov = "hetero")
+
+ols_model_cov_both <- feols(comp_score_5to6 ~ head_start + ppvt_3 + learndis | mom_id, 
+                      data = nlsy_kids, vcov = "hetero")
+
+
+summary(ols_model_cov_ppvt)
+summary(ols_model_cov_learndis)
+summary(ols_model_cov_both)
+
 
 ```
 
@@ -207,8 +235,31 @@ Code: Regressions.
 
 Verbal: Interpret.
 
+The coefficients of head start on 7-10 is 0.166361 and 11-14 is 0.230717, both of which are lower than 5-6's 0.334273, showing that the effect seems to decrease with age, although not by much. the t-value for 7-10 is not high enough for statistical significance, so we can just focus on ages 11-14. The seemingly 33% drop in coefficient makes sense as the head start program was not a long lasting treatment and the students may forget what they have learned over time.
+
 ```{r echo=TRUE}
 # All question 7 code here
+
+# creating a function to standardize test scores across ages
+standardize_scores <- function(scores) {
+  return((scores - mean(scores, na.rm = TRUE)) / sd(scores, na.rm = TRUE))
+}
+
+# Standardize test scores for each age group
+nlsy_kids$std_comp_score_5to6 <- standardize_scores(nlsy_kids$comp_score_5to6)
+nlsy_kids$std_comp_score_7to10 <- standardize_scores(nlsy_kids$comp_score_7to10)
+nlsy_kids$std_comp_score_11to14 <- standardize_scores(nlsy_kids$comp_score_11to14)
+
+# Estimate fixed-effects models for each age group
+fe_model_5to6 <- feols(std_comp_score_5to6 ~ head_start | mom_id, data = nlsy_kids, vcov = "iid")
+fe_model_7to10 <- feols(std_comp_score_7to10 ~ head_start | mom_id, data = nlsy_kids, vcov = "iid")
+fe_model_11to14 <- feols(std_comp_score_11to14 ~ head_start | mom_id, data = nlsy_kids, vcov = "iid")
+
+# Print the summary of the models
+summary(fe_model_5to6)
+summary(fe_model_7to10)
+summary(fe_model_11to14)
+
 
 ```
 
@@ -220,8 +271,23 @@ Code: Regressions.
 
 Verbal: Interpret.
 
+When regressing on self-rated health, high school graduate and some college, some college is statistically insignificant. In regards self-rated health, the head start program has a negative effect. In regards to education, the effect on the probability to graduate high school is double that of attending college, 
+
 ```{r echo=TRUE}
 # All question 8 code here
+
+nlsy_kids <- nlsy_kids %>% drop_na(fphealth, hsgrad, somecoll)
+
+# Estimate fixed-effects logit models for each outcome
+fe_model_fphealth <- feols(fphealth ~ head_start | mom_id, data = nlsy_kids)
+fe_model_hsgrad <- feols(hsgrad ~ head_start | mom_id, data = nlsy_kids)
+fe_model_somecoll <- feols(somecoll ~ head_start | mom_id, data = nlsy_kids)
+
+# Print the summary of the models
+summary(fe_model_fphealth)
+summary(fe_model_hsgrad)
+summary(fe_model_somecoll)
+
 
 ```
 
