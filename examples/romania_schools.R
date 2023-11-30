@@ -16,7 +16,7 @@ ls(romania_schools)
 # ptile = percentile on high school exit exam
 
 # summarize distance to the town-specific cutoff
-summary(romania$distance)
+summary(romania_schools$distance)
 
 # graph of first stage: effect of being above cutoff on attending better school
 # plot binned means for 0.05-wide bins

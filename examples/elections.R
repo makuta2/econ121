@@ -129,7 +129,10 @@ ggplot() +
   geom_line(data = elections, aes(difdemshare, demsharenext_hat_poly_control), color = "navy") +
   geom_line(data = elections, aes(difdemshare, demsharenext_hat_loclin), color = "tomato")
                 
-                    
+
+
+
+
 
 
 
