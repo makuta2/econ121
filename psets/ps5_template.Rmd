@@ -1,0 +1,163 @@
+---
+title: "ECON 121 FA23 Problem Set 5"
+author: "Your name"
+output: pdf_document
+---
+<!-- if you are having trouble knitting, change pdf_document to html_document. 
+     you can then open the html file in a web browser and print to PDF. -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) # sets the code chunk format
+rm(list = ls()) # clears the environment
+```
+
+## Question 1
+
+Verbal: list group members.
+
+\newpage
+
+## Question 2
+
+Code: Load packages and dataset, summarize data.
+
+Verbal: Interpret summary statistics.
+
+```{r message=FALSE, warning=FALSE}
+# The PDF will show the code you write here but not the output.
+# Load packages and dataset here.
+
+```
+
+```{r}
+# The PDF will show the code AND output here.
+# Summarize the data here.
+
+```
+
+\newpage
+
+## Question 3
+
+Code: Regression.
+
+Verbal: Interpret.
+
+```{r}
+# All question 3 code here.
+
+```
+
+\newpage
+
+## Question 4
+
+Code: Generate variable.
+
+```{r}
+# All question 4 code here
+
+```
+
+\newpage
+
+## Question 5
+
+Code: Regression.
+
+Verbal: Interpret.
+
+```{r}
+# All question 5 code here
+
+```
+
+\newpage
+
+## Question 6
+
+Code: Regression.
+
+Verbal: Interpret.
+
+```{r}
+# All question 6 code here
+
+```
+
+\newpage
+
+## Question 7
+
+Code: Calculation. 
+
+Verbal: Interpret.
+
+```{r}
+# All question 7 code here
+
+```
+
+\newpage
+
+## Question 8
+
+Code: Regression.
+
+Verbal: Interpret.
+
+```{r}
+# All question 8 code here
+
+```
+
+\newpage
+
+## Question 9
+
+Verbal: Assessment.
+
+\newpage
+
+## Question 10
+
+Verbal: Interpretation.
+
+\newpage
+
+## Question 11
+
+# a.
+
+Code.
+
+```{r}
+
+```
+
+# b. code
+
+```{r}
+
+```
+
+# c. code and verbal
+
+```{r}
+
+```
+
+# d. code and verbal
+
+```{r}
+
+```
+
+# e. code and verbal
+
+```{r}
+
+```
+
+# f. verbal
+
