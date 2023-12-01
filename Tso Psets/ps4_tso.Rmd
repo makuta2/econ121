@@ -38,9 +38,12 @@ Notable mean differences between the headstart participating children are sibdif
 # The PDF will show the code you write here but not the output.
 # Load packages and dataset here.
 
+#install.packages("plm")
+
 rm(list=ls())
 library(tidyverse)
 library(fixest)
+library(plm)
 
 load(url("https://github.com/tvogl/econ121/raw/main/data/nlsy_kids.Rdata"))
 
@@ -299,14 +302,43 @@ Code: Analysis of heterogeneity.
 
 Verbal: Interpret.
 
+When accounting for race/ethnicity, the interaction coefficients for Hispanic is 0.031051, while for black is 0.077025 and male is 0.016949, none of which are statistically significant. Male alone has a negative coefficient of -0.089386 which is statistically significant. This shows that being male reaps the lowest benefit of the head start program compared to being black or hispanic.
+
 ```{r echo=TRUE}
 # All question 9 code here
+
+
+#using fixed effects OLS
+fe_model_hsgrad <- feols(hsgrad ~ head_start + black + hispanic + male +
+                                  head_start*(black + hispanic + male) |
+                                  mom_id, data = nlsy_kids)
+
+# Summarize the model
+summary(fe_model_hsgrad)
+
+
+
+#using the Panel Linear Model(PLM) method
+
+# Estimate the model with interaction terms
+interaction_model <- plm(hsgrad ~ head_start + black + hispanic + male +
+                                  head_start*(black + hispanic + male), 
+                         data = nlsy_kids, 
+                         index = c("mom_id"),
+                         model = "within", 
+                         effect = "individual")
+
+# Summarize the model
+summary(interaction_model)
+
 
 ```
 
 \newpage
 
-## Question 9
+## Question 10
 
 Verbal: Policy implications.
+
+In regards to the effect of high school graduation, when controlling for gender, head start does not seem to correct the difference between male and female graduation rates. In the dataset provided, since black and hispanic share collinearity with mother fixed effect in the head start program, this data set alone is unable to determine if the headstart program is an effective treatment in the context of high school graduation. When accounting for costs, there may be more effective programs for later childhood stages, as we notice that the headstart treatment has a drop-off on test scores 4-6 years down the line, it might be better to allocate resources from head start to elementary or middle school instead to account for this "treatment decay". Overall, we would have to compare treatment effects between black and hispanic graduation rates without head start while keeping mother fixed effects. My concern is by going forward with the expansion of this program without further information, this policy could result in larger education gaps in minority communities, or worse, a stagnation of education that gets completely ignored because the treatment effects aren't bad enough to warrant investigation. I would also like to see an up-to-date dataset that include other minority groups such as Asians and Native Americans, as this program has an unknown effect on minority groups smaller than 5-7% of the population.
 
