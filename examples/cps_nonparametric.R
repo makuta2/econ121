@@ -1,13 +1,15 @@
 # this script studies the relationship or gender and age with income in 
 # the united states, using the CPS. it relies on nonparametric estimators.
 
-# load packages
+# clear environment and load packages
+rm(list = ls())
 library(tidyverse)
 library(KernSmooth)
 
 # load dataset
 load(url("https://github.com/tvogl/econ121/raw/main/data/cps18.Rdata"))
 
+# summarize
 summary(cps18)
 
 # from the summary() results above, we know incwage has many 0s.
