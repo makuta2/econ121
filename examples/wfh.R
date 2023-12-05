@@ -124,6 +124,15 @@ feols(calls ~ 1 | wfh ~ winner,
       subset = ~(lottery==1 & prog_period==1),
       vcov = ~personid)
 
+# If you want to report the first stage, you should 
+# name the model and then feed it to summary().
+iv_model <- feols(calls ~ 1 | wfh ~ winner,
+                  data = wfh,
+                  subset = ~(lottery==1 & prog_period==1),
+                  vcov = ~personid)
+summary(iv_model, stage = 1)
+summary(iv_model, stage = 2)
+
 # There are *almost* no "always takers" here. If there were none,
 # we could interpret the IV estimate as a TOT. With "always
 # takers," we should interpret the IV estimate as a LATE, if
