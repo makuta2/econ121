@@ -14,11 +14,10 @@ summary(cps18)
 
 # from the summary() results above, we know incwage has many 0s.
 # over 25% of sample has 0s! restrict to workers who work 40+ hrs/wk 
-# with positive income. since we are just analyzing black/white diffs
-# drop all other racial categories.
+# with positive income.
 cps18 <- 
   cps18 %>% 
-  filter(hrs_per_wk >=40 & incwage>0 & (race=="white" | race == "black"))
+  filter(hrs_per_wk >=40 & incwage>0)
 
 # generate log income
 cps18$lninc <- log(cps18$incwage)
