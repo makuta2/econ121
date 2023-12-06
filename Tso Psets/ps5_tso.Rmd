@@ -90,7 +90,7 @@ Code: Regression.
 
 Verbal: Interpret.
 
-The statistically significant coefficient for conscription's effect on crime rate is 0.002420	, implying a negative correlation. There are likely biases as we see that birth year also has a statistical significant coefficient of 0.000478, meaning that the relative year of conscription based on military demand were possibly pulling more or less young adults off the streets away from committing crime.
+The statistically significant coefficient for conscription's effect on crime rate is 0.002420	, implying a positive correlation. There are likely biases as we see that birth year also has a statistical significant coefficient of 0.000478, meaning that the relative year of conscription based on military demand were possibly pulling more or less young adults off the streets away from committing crime. Conversely, there may be a negative career impact from conscription on young adults who exit the service and they turn to crime.
 
 ```{r}
 # All question 3 code here.
@@ -209,6 +209,7 @@ cat("Instrumental Variables (IV) Estimate:", iv_estimate, "\n")
 
 
 
+
 ```
 
 \newpage
@@ -218,7 +219,7 @@ cat("Instrumental Variables (IV) Estimate:", iv_estimate, "\n")
 Code: Regression.
 
 Verbal: Interpret.
-fit_conscripted is 0.002787 and the OLS conscripted is 0.002420 which are similar but different values. This makes sense as we are accounting for the IV eligility in the 2SLS regression, while in OLS we have a much less accurate coefficient for conscription. 
+fit_conscripted is 0.002787 and the OLS conscripted is 0.002420 which are similar but different values. This makes sense as we are accounting for the IV eligibility in the 2SLS regression, while in OLS we have a much less accurate coefficient for conscription. 
 
 ```{r}
 # All question 8 code here
@@ -252,9 +253,7 @@ Verbal: Interpretation.
 
 ## Question 11
 
-# a.
-
-Code.
+# a. Code.
 
 ```{r}
 
@@ -302,7 +301,7 @@ ggplot(crime_argentina_distance, aes(distance, conscripted)) +
 
 # d. code and verbal
 
-There does not seem to be a raise of crime from the cutoff, 
+There does not seem to be a raise of crime from the cutoff, the plots look relatively equally distributed between 0.05 and 0.10, with some outliers that are inconsistent across the 5 years.
 
 ```{r}
 
@@ -317,7 +316,7 @@ ggplot(crime_argentina_distance, aes(distance, crimerate)) +
 
 # e. code and verbal
 
-The 2SLS regression includes the interaction term between distance and eligibility to account for negative slopes on either side of the cutoff. In the first stage crime rate is regressed against distance, eligibility and the interaction. In the second stage crime rate is regressed against conscripted, distance, and the interaction of eligibility x interaction. We can see in the second stage that only the intercept is statistically significant, so there is an unlikely relationship between conscription and crimerate. 
+The 2SLS regression includes the interaction term between distance and eligibility to account for negative slopes on either side of the cutoff. In the first stage, crime rate is regressed against distance, eligibility and the interaction distance x eligibility. In the second stage, crime rate is regressed against conscripted, distance, and the interaction of eligibility x interaction. We can see in the second stage that only the intercept is statistically significant, so there is unlikely a relationship between conscription and crimerate. 
 
 ```{r}
 
@@ -334,5 +333,5 @@ summary(fuzzy_rd, stage = 2)
 
 # f. verbal
 
-Because we excluded distance beyond the range of 100 and -100 we are focused on the middle 200 lottery numbers drawn in the data set. This is akin to zooming into the scatter plot or dataset. The differences between one drafted number to the next may not vary much on a small scale and can indicate low statistical power, ie. we may have dropped too many data points.  There may still be a correlation when we reintroduce or widen the range, or maybe include more birth years beyond 1958-1962. In regards to regression we have also excluded control variables of ethnicity which may account for this discrepancy if we introduce interaction terms between "argentine", "ingenous", "naturalized" and distance or eligibility.
+Because we excluded distance beyond the range of 100 and -100 we are focused on the middle 200 lottery numbers drawn in the data set. This is akin to zooming into the scatter plot or dataset. The differences between one drafted number to the next may not vary much on a small scale and can indicate low statistical power, ie. we may have dropped too many data points.  There may still be a correlation when we reintroduce or widen the range, or maybe include more birth years beyond 1958-1962. In regards to regression we have also excluded control variables of ethnicity which may account for this discrepancy if we introduce interaction terms between "argentine", "ingenous", "naturalized" and distance/eligibility.
 
