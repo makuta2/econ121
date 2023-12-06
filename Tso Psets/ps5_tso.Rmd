@@ -1,0 +1,338 @@
+---
+title: "ECON 121 FA23 Problem Set 5"
+author: "Robert Tso"
+output: pdf_document
+---
+<!-- if you are having trouble knitting, change pdf_document to html_document. 
+     you can then open the html file in a web browser and print to PDF. -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) # sets the code chunk format
+rm(list = ls()) # clears the environment
+```
+
+## Question 1
+
+Verbal: list group members.
+
+Robert Tso - A13829791
+
+Tomas Lopez - A16798775
+
+Stephanie Nguyen - A16215540
+
+Akash Juwadi - A16372772
+
+ChatGPT
+
+
+\newpage
+
+## Question 2
+
+Code: Load packages and dataset, summarize data.
+
+Verbal: Interpret summary statistics.
+
+Conscription and crime rates seem constant across the birth years, although in 1961 there was an uptick in conscription and similarly a small uptick in crime. this matches the average conscription and crime rates across all years. I also included the draft numbers to check if the randomly assigned lottery was truly random and equally distributed, which it was, more so than conscription and crime.
+
+```{r message=FALSE, warning=FALSE}
+# The PDF will show the code you write here but not the output.
+# Load packages and dataset here.
+
+rm(list=ls())
+library(tidyverse)
+library(fixest)
+library(plm)
+library(ggplot2)
+
+
+# load(url("https://github.com/tvogl/econ121/raw/main/data/crime_argentina.csv"))
+crime_argentina <- read_csv("D:/Documents/Class/Econ 121/econ121/data/crime_argentina.csv")
+
+view(crime_argentina)
+
+
+```
+
+```{r}
+# The PDF will show the code AND output here.
+# Summarize the data here.
+summary(crime_argentina)
+
+# Check for missing values in the entire dataset
+any_missing <- any(is.na(crime_argentina))
+
+# Print the result
+if (any_missing) {
+  cat("There are missing values in the dataset.\n")
+} else {
+  cat("There are no missing values in the dataset.\n")
+}
+
+# Explore differences in conscription rates across birth years
+boxplot(conscripted ~ birthyr, data = crime_argentina, main = "Conscription Rates Across Birth Years", xlab = "Birth Year", ylab = "Conscription Rate")
+
+# Explore differences in crime rates across birth years
+boxplot(crimerate ~ birthyr, data = crime_argentina, main = "Crime Rates Across Birth Years", xlab = "Birth Year", ylab = "Crime Rate")
+
+# Explore differences in lottery numbers across birth years
+boxplot(draftnumber ~ birthyr, data = crime_argentina, main = "Lotto Number Across Birth Years", xlab = "Birth Year", ylab = "Draft Number")
+
+
+```
+
+\newpage
+
+## Question 3
+
+Code: Regression.
+
+Verbal: Interpret.
+
+The statistically significant coefficient for conscription's effect on crime rate is 0.002420	, implying a negative correlation. There are likely biases as we see that birth year also has a statistical significant coefficient of 0.000478, meaning that the relative year of conscription based on military demand were possibly pulling more or less young adults off the streets away from committing crime.
+
+```{r}
+# All question 3 code here.
+
+
+# Run OLS regression
+ols_crime_conscript <- feols(crimerate ~ conscripted + birthyr + 
+                                          argentine + indigenous + naturalized,
+                            data = crime_argentina,
+                            vcov = 'hetero')
+
+
+# Summarize the model
+summary(ols_crime_conscript)
+
+
+```
+
+\newpage
+
+## Question 4
+
+Code: Generate variable.
+
+```{r}
+# All question 4 code here
+
+# Define birth years and corresponding cutoffs
+years <- c(1958, 1959, 1960, 1961, 1962)
+cutoffs <- c(175, 320, 341, 350, 320)
+
+# Code a variable indicating eligibility (1 if eligible, 0 if not)
+crime_argentina$eligible <- with(crime_argentina, 
+                  ifelse(birthyr == years[1] & draftnumber >= cutoffs[1], 1,
+                  ifelse(birthyr == years[2] & draftnumber >= cutoffs[2], 1,
+                  ifelse(birthyr == years[3] & draftnumber >= cutoffs[3], 1,
+                  ifelse(birthyr == years[4] & draftnumber >= cutoffs[4], 1,
+                  ifelse(birthyr == years[5] & draftnumber >= cutoffs[5], 1, 
+                         0))))))
+
+# Check the new variable
+view(crime_argentina)
+
+```
+
+\newpage
+
+## Question 5
+
+Code: Regression.
+
+Verbal: Interpret.
+
+We control for birth year because the age of adulthood or parenthood has an impact on whether or not a man is enlisted when his number is drawn for conscription, younger ages are more likely to be enlisted since they are less likely to be fathers or clerics at the time of the drawing. We control for ethnic composition because there may be a racial systemic factor in conscription. Upon regressing we see that the 2 statistically significant coefficients are eligible at 0.659805 and birth year at 0.010910. Eligibility should have a direct correlation on conscription since it determines if that person qualifies for service. Higher birth year means younger conscripts so they are more likely to be enlisted as well.
+
+```{r}
+# All question 5 code here
+
+#first stage regression
+ols_conscript_eligibility <- feols(conscripted ~ eligible + birthyr + 
+                                              argentine + indigenous + 
+                                              naturalized,
+                                  data = crime_argentina,
+                                  vcov = 'hetero')
+
+summary(ols_conscript_eligibility)
+
+```
+
+\newpage
+
+## Question 6
+
+Code: Regression.
+
+Verbal: Interpret.
+
+```{r}
+# All question 6 code here
+
+# Run reduced form regression
+reduced_form_model <- feols(crimerate ~ eligible + birthyr + 
+                                        argentine + indigenous + naturalized,
+                            data = crime_argentina,
+                            vcov = 'hetero')
+
+# Summarize the model
+summary(reduced_form_model)
+
+
+```
+
+\newpage
+
+## Question 7
+
+Code: Calculation. 
+
+Verbal: Interpret.
+
+```{r}
+# All question 7 code here
+
+# First Stage Estimate
+first_stage_estimate <- coef(ols_conscript_eligibility)['eligible']
+
+# Reduced Form Estimate
+reduced_form_estimate <- coef(reduced_form_model)['eligible']
+
+# Instrumental Variables (IV) Estimate
+iv_estimate <- reduced_form_estimate / first_stage_estimate
+
+# Print the IV Estimate
+cat("Instrumental Variables (IV) Estimate:", iv_estimate, "\n")
+
+
+
+
+```
+
+\newpage
+
+## Question 8
+
+Code: Regression.
+
+Verbal: Interpret.
+fit_conscripted is 0.002787 and the OLS conscripted is 0.002420 which are similar but different values. This makes sense as we are accounting for the IV eligility in the 2SLS regression, while in OLS we have a much less accurate coefficient for conscription. 
+
+```{r}
+# All question 8 code here
+
+tsls_crimerate <- feols(crimerate ~ birthyr + argentine + indigenous + 
+                                    naturalized| conscripted ~ eligible, 
+                        data = crime_argentina)
+
+summary(tsls_crimerate, stage= 1)
+summary(tsls_crimerate, stage= 2)
+
+
+
+```
+
+\newpage
+
+## Question 9
+
+Verbal: Assessment.
+
+Yes, eligibility meets the requirements of Relevance and Exogeneity. It is relevant because eligibility is based off of the draft number, which determines who gets drafted. The lottery assignment of the draft number as demonstrated in the summarized data, showed that it was equally distributed across all birth years. This randomness is ideal for an IV because we can eliminate a selection bias from the initial drawing of the numbers.
+
+\newpage
+
+## Question 10
+
+Verbal: Interpretation.
+
+\newpage
+
+## Question 11
+
+# a.
+
+Code.
+
+```{r}
+
+ggplot(crime_argentina, aes(draftnumber, conscripted)) +
+geom_point() +
+facet_wrap(~birthyr)
+
+```
+
+# b. code
+
+```{r}
+
+crime_argentina$distance <- with(crime_argentina, 
+                  ifelse(birthyr == years[1], draftnumber - cutoffs[1],
+                  ifelse(birthyr == years[2], draftnumber - cutoffs[2],
+                  ifelse(birthyr == years[3], draftnumber - cutoffs[3],
+                  ifelse(birthyr == years[4], draftnumber - cutoffs[4],
+                  ifelse(birthyr == years[5], draftnumber - cutoffs[5], 
+                         0))))))
+
+crime_argentina_distance <- crime_argentina %>%
+  filter(distance >= -100, distance <= 100)
+
+view(crime_argentina_distance)
+
+
+```
+
+# c. code and verbal
+
+Yes, the jump from the left and right of Zero distance is pronounced enough to show that conscription rates increase.
+
+```{r}
+
+ggplot(crime_argentina_distance, aes(distance, conscripted)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Conscripted against Distance",
+       x = "Distance from Birth-Year-Specific Cutoff",
+       y = "Conscripted") +
+  facet_wrap(~birthyr)
+
+
+```
+
+# d. code and verbal
+
+There does not seem to be a raise of crime from the cutoff, 
+
+```{r}
+
+ggplot(crime_argentina_distance, aes(distance, crimerate)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Crimerate against Distance",
+       x = "Distance from Birth-Year-Specific Cutoff",
+       y = "Crimerate") +
+  facet_wrap(~birthyr)
+
+```
+
+# e. code and verbal
+
+The 2SLS regression includes the interaction term between distance and eligibility to account for negative slopes on either side of the cutoff. In the first stage crime rate is regressed against distance, eligibility and the interaction. In the second stage crime rate is regressed against conscripted, distance, and the interaction of eligibility x interaction. We can see in the second stage that only the intercept is statistically significant, so there is an unlikely relationship between conscription and crimerate. 
+
+```{r}
+
+crime_argentina_distance <- crime_argentina_distance %>% 
+  mutate(distXelig = distance*eligible)
+
+fuzzy_rd <- feols(crimerate ~ distance + distXelig | conscripted ~ eligible, 
+                  data = crime_argentina_distance, vcov = "hetero")
+
+summary(fuzzy_rd, stage = 1)
+summary(fuzzy_rd, stage = 2)
+
+```
+
+# f. verbal
+
+Because we excluded distance beyond the range of 100 and -100 we are focused on the middle 200 lottery numbers drawn in the data set. This is akin to zooming into the scatter plot or dataset. The differences between one drafted number to the next may not vary much on a small scale and can indicate low statistical power, ie. we may have dropped too many data points.  There may still be a correlation when we reintroduce or widen the range, or maybe include more birth years beyond 1958-1962. In regards to regression we have also excluded control variables of ethnicity which may account for this discrepancy if we introduce interaction terms between "argentine", "ingenous", "naturalized" and distance or eligibility.
+
