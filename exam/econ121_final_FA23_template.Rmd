@@ -15,7 +15,7 @@ library(fixest)
 library(car)
 library(mfx)
 # load the dataset
-#load(url("https://github.com/tvogl/econ121/raw/main/data/migration.Rdata"))
+load(url("https://github.com/tvogl/econ121/raw/main/data/migration.Rdata"))
 ```
 
 ## Question 1
