@@ -168,6 +168,8 @@ Code: Regression.
 
 Verbal: Interpret.
 
+When regressing on the IV to find the reduced form we see that eligible has a statistically significant coefficient of 0.001839 compared to regressing crimerate against conscription for 0.002420. These are both in the same orders of magnitude and seeing that the coefficient of eligible on conscripted was 0.659805, which is closer to 1.00 than not, we imagine how eligible can be a strong IV for conscription.
+
 ```{r}
 # All question 6 code here
 
@@ -249,6 +251,8 @@ Yes, eligibility meets the requirements of Relevance and Exogeneity. It is relev
 
 Verbal: Interpretation.
 
+2SLS is measuring the sub-population that have been conscripted and the Average treatment effect (ATE) on crime rate. By using the eligibility IV we are now measuring the local average treatment effect since conscription status changes based off of eligibility. Treatment-on-the-treated does not apply since there were a handful of people who were conscripted while they were ineligible by the lottery cut-off, meaning those who were supposed to be untreated by measure of eligibility, still got treatment by conscription.
+
 \newpage
 
 ## Question 11
@@ -301,7 +305,7 @@ ggplot(crime_argentina_distance, aes(distance, conscripted)) +
 
 # d. code and verbal
 
-There does not seem to be a raise of crime from the cutoff, the plots look relatively equally distributed between 0.05 and 0.10, with some outliers that are inconsistent across the 5 years.
+There does not seem to be a rise of crime after the cutoff, the plots look  equally distributed between 0.05 and 0.10, with some outliers that are inconsistent across the 5 years.
 
 ```{r}
 
