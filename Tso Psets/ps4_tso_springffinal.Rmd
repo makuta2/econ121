@@ -1,0 +1,345 @@
+---
+title: "ECON 121 FA23 Problem Set 4"
+author: "Robert Tso"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) # sets the code chunk format
+rm(list = ls()) # clears the environment
+```
+
+## Question 1
+
+Verbal: list group members.
+
+Robert Tso - A13829791
+
+Tomas Lopez - A16798775
+
+Stephanie Nguyen - A16215540
+
+Akash Juwadi - A16372772
+
+ChatGPT
+
+\newpage
+
+## Question 2
+
+Code: Load packages and dataset, summarize data.
+
+Verbal: Interpret the summary statistics.
+
+Notable mean differences between the headstart participating children are sibdiff of 0.350750326, showing that children who are in headstart have a third likelihood to have siblings also in headstart. There are also 25% more black children but 4.7% less hispanic children. The largest impact is comp_score_5to6	with a mean difference of -5.560310055	and median difference of-6.0, showing that headstart children have lower test scores in this bracket. Logged income or lninc_0to3	with mean of -0.421336775	and median of -.5775361, showing that headstart children have 0.5	less logged income.
+
+
+```{r message=FALSE, warning=FALSE}
+# The PDF will show the code you write here but not the output.
+# Load packages and dataset here.
+
+#install.packages("plm")
+
+rm(list=ls())
+library(tidyverse)
+library(fixest)
+library(plm)
+
+load(url("https://github.com/tvogl/econ121/raw/main/data/nfhs5.Rdata"))
+nlsy_kids<-nfhs5
+
+
+```
+
+```{r echo=TRUE}
+# The PDF will show the code AND output here.
+# Summarize the data here.
+
+
+
+#looking at the amount of missing data to determine which ones are worth dropping.
+colSums(is.na(nlsy_kids))/nrow(nlsy_kids)
+#ppvt_3 is missing 80%+, dropping would result in most of the data being missing
+
+nlsy_kids<-nlsy_kids %>% drop_na(lninc_0to3, momed, lnbw, 
+                      comp_score_5to6 ,learndis)
+
+view(nlsy_kids)
+
+summary(nlsy_kids)
+
+
+nlsy_kids_HS <- subset(nlsy_kids, head_start == 1)
+nlsy_kids_NHS <- subset(nlsy_kids, head_start == 0)
+
+
+#comparing the difference of mean and median of the two subsets of head_start
+
+# Subset the dataset for head_start = 1
+subset_head_start_1 <- subset(nlsy_kids, head_start == 1)
+
+# Subset the dataset for head_start = 0
+subset_head_start_0 <- subset(nlsy_kids, head_start == 0)
+
+# Get the names of all variables in the dataset
+all_variables <- names(nlsy_kids)
+
+# Initialize vectors to store differences
+mean_differences <- c()
+median_differences <- c()
+
+# Loop through variables
+for (variable in all_variables) {
+  # Skip non-numeric variables
+  if (!is.numeric(nlsy_kids[[variable]])) {
+    next
+  }
+
+  # Calculate mean and median for head_start = 1
+  mean_head_start_1 <- mean(subset_head_start_1[[variable]])
+  median_head_start_1 <- median(subset_head_start_1[[variable]])
+
+  # Calculate mean and median for head_start = 0
+  mean_head_start_0 <- mean(subset_head_start_0[[variable]])
+  median_head_start_0 <- median(subset_head_start_0[[variable]])
+
+  # Calculate differences
+  mean_difference <- mean_head_start_1 - mean_head_start_0
+  median_difference <- median_head_start_1 - median_head_start_0
+
+  # Store differences in vectors
+  mean_differences <- c(mean_differences, mean_difference)
+  median_differences <- c(median_differences, median_difference)
+}
+
+# Create a data frame to display the results
+results <- data.frame(
+  Variable = all_variables,
+  MeanDifference = mean_differences,
+  MedianDifference = median_differences
+)
+
+# Print the results, head_start minus non_head_start
+print(results)
+
+
+
+```
+
+\newpage
+
+## Question 3
+
+Code: Regression.
+
+Verbal: Interpret.
+
+Headstart has a -5.560 coefficient on test scores implying that by enrolling your child in a head start would result in a test score decrease by 5.6. With a t value of -4.888 the coefficient is statistically significant. It is reasonable to assume exogeneity, however it is likely there are omitted variables. We have to consider that the purpose of the headstart program is to help disadvantaged children with their education, so those enrolled in headstart may already have been on track to test lower scores down the line due to other environmental factors. This bias may be causing the coefficient to be much lower than it could be, since as it currently stands, the treatment seems worse than the symptom.
+
+
+```{r echo=TRUE}
+# All question 3 code here.
+
+# Run OLS regression
+
+ols_model <- feols(comp_score_5to6 ~ head_start, data = nlsy_kids)
+summary(ols_model)
+
+#boxplot(comp_score_5to6 ~ head_start, data = nlsy_kids, main = "Comparison of Test Scores by Head Start Participation")
+
+
+```
+
+\newpage
+
+## Question 4
+
+Code: Regression.
+
+Verbal: Interpret.
+
+The coefficient if still in the same order of magnitude and direction, but it has become larger in effect, -7.2604 compared to -5.560, showing that when accounting for the same family under the same mother, the effect has become stronger.
+
+```{r echo=TRUE}
+# All question 4 code here
+
+
+# Create a new data frame with family-level means
+family_means <- nlsy_kids %>%
+  group_by(mom_id) %>%
+  summarise(mean_head_start = mean(head_start),
+            mean_test_scores = mean(comp_score_5to6))
+
+# Run OLS regression
+ols_model_family <- feols(mean_test_scores ~ mean_head_start, 
+                          data = family_means)
+
+# Summarize the model
+summary(ols_model_family)
+
+
+```
+
+\newpage
+
+## Question 5
+
+Code: Regression.
+
+Verbal: Interpret.
+
+By using OLS with fixed effects of mother ID, the coefficient of head start becomes positive with a magnitude similar to the one found in question 4. Under the assumption that the Head start program should improve test scores, we would take this coefficient to be one that most likely reflects the effect of the program, as in previous analyses it has been returning coefficients that seem counter-intuitive to the intentions of the treatment.
+
+```{r echo=TRUE}
+# All question 5 code here
+
+ols_model_fe <- feols(comp_score_5to6 ~ head_start | mom_id, 
+                      data = nlsy_kids)
+summary(ols_model_fe)
+
+
+
+```
+
+\newpage
+
+## Question 6
+
+Code: Regression.
+
+Verbal: Interpret.
+
+The coefficient of head start becomes negative again, but with a much smaller magnitude of 1.3095 demonstrating that when accounting for the ppvt test taken at age 3, head start has a much weaker predictive power on the age 5-6 test scores, and again has a negative effect as shown in questions 3 and 4. As the coefficient has swung to such a wide degree and has a standard error of 15 the robustness of the original regression may be called into question. When accounting separately for learning disability, robustness remains similar.
+
+```{r echo=TRUE}
+# All question 6 code here
+
+ols_model_cov_ppvt <- feols(comp_score_5to6 ~ head_start + ppvt_3 | mom_id, 
+                      data = nlsy_kids, vcov = "hetero")
+
+ols_model_cov_learndis <- feols(comp_score_5to6 ~ head_start + learndis | mom_id, 
+                      data = nlsy_kids, vcov = "hetero")
+
+ols_model_cov_both <- feols(comp_score_5to6 ~ head_start + ppvt_3 + learndis | mom_id, 
+                      data = nlsy_kids, vcov = "hetero")
+
+
+summary(ols_model_cov_ppvt)
+summary(ols_model_cov_learndis)
+summary(ols_model_cov_both)
+
+
+```
+
+\newpage
+
+## Question 7
+
+Code: Regressions.
+
+Verbal: Interpret.
+
+The coefficients of head start on 7-10 is 0.166361 and 11-14 is 0.230717, both of which are lower than 5-6's 0.334273, showing that the effect seems to decrease with age, although not by much. the t-value for 7-10 is not high enough for statistical significance, so we can just focus on ages 11-14. The seemingly 33% drop in coefficient makes sense as the head start program was not a long lasting treatment and the students may forget what they have learned over time.
+
+```{r echo=TRUE}
+# All question 7 code here
+
+# creating a function to standardize test scores across ages
+standardize_scores <- function(scores) {
+  return((scores - mean(scores, na.rm = TRUE)) / sd(scores, na.rm = TRUE))
+}
+
+# Standardize test scores for each age group
+nlsy_kids$std_comp_score_5to6 <- standardize_scores(nlsy_kids$comp_score_5to6)
+nlsy_kids$std_comp_score_7to10 <- standardize_scores(nlsy_kids$comp_score_7to10)
+nlsy_kids$std_comp_score_11to14 <- standardize_scores(nlsy_kids$comp_score_11to14)
+
+# Estimate fixed-effects models for each age group
+fe_model_5to6 <- feols(std_comp_score_5to6 ~ head_start | mom_id, data = nlsy_kids, vcov = "iid")
+fe_model_7to10 <- feols(std_comp_score_7to10 ~ head_start | mom_id, data = nlsy_kids, vcov = "iid")
+fe_model_11to14 <- feols(std_comp_score_11to14 ~ head_start | mom_id, data = nlsy_kids, vcov = "iid")
+
+# Print the summary of the models
+summary(fe_model_5to6)
+summary(fe_model_7to10)
+summary(fe_model_11to14)
+
+
+```
+
+\newpage
+
+## Question 8
+
+Code: Regressions.
+
+Verbal: Interpret.
+
+When regressing on self-rated health, high school graduate and some college, some college is statistically insignificant. In regards self-rated health, the head start program has a negative effect. In regards to education, the effect on the probability to graduate high school is double that of attending college, 
+
+```{r echo=TRUE}
+# All question 8 code here
+
+nlsy_kids <- nlsy_kids %>% drop_na(fphealth, hsgrad, somecoll)
+
+# Estimate fixed-effects logit models for each outcome
+fe_model_fphealth <- feols(fphealth ~ head_start | mom_id, data = nlsy_kids)
+fe_model_hsgrad <- feols(hsgrad ~ head_start | mom_id, data = nlsy_kids)
+fe_model_somecoll <- feols(somecoll ~ head_start | mom_id, data = nlsy_kids)
+
+# Print the summary of the models
+summary(fe_model_fphealth)
+summary(fe_model_hsgrad)
+summary(fe_model_somecoll)
+
+
+```
+
+\newpage
+
+## Question 9
+
+Code: Analysis of heterogeneity.
+
+Verbal: Interpret.
+
+When accounting for race/ethnicity, the interaction coefficients for Hispanic is 0.031051, while for black is 0.077025 and male is 0.016949, none of which are statistically significant. Male alone has a negative coefficient of -0.089386 which is statistically significant. This shows that being male reaps the lowest benefit of the head start program compared to being black or hispanic.
+
+```{r echo=TRUE}
+# All question 9 code here
+
+
+#using fixed effects OLS
+fe_model_hsgrad <- feols(hsgrad ~ head_start + black + hispanic + male +
+                                  head_start*(black + hispanic + male) |
+                                  mom_id, data = nlsy_kids)
+
+# Summarize the model
+summary(fe_model_hsgrad)
+
+
+
+#using the Panel Linear Model(PLM) method
+
+# Estimate the model with interaction terms
+interaction_model <- plm(hsgrad ~ head_start + black + hispanic + male +
+                                  head_start*(black + hispanic + male), 
+                         data = nlsy_kids, 
+                         index = c("mom_id"),
+                         model = "within", 
+                         effect = "individual")
+
+# Summarize the model
+summary(interaction_model)
+
+
+```
+
+\newpage
+
+## Question 10
+
+Verbal: Policy implications.
+
+In regards to the effect of high school graduation, when controlling for gender, head start does not seem to correct the difference between male and female graduation rates. In the dataset provided, since black and hispanic share collinearity with mother fixed effect in the head start program, this data set alone is unable to determine if the headstart program is an effective treatment in the context of high school graduation. When accounting for costs, there may be more effective programs for later childhood stages, as we notice that the headstart treatment has a drop-off on test scores 4-6 years down the line, it might be better to allocate resources from head start to elementary or middle school instead to account for this "treatment decay". Overall, we would have to compare treatment effects between black and hispanic graduation rates without head start while keeping mother fixed effects. My concern is by going forward with the expansion of this program without further information, this policy could result in larger education gaps in minority communities, or worse, a stagnation of education that gets completely ignored because the treatment effects aren't bad enough to warrant investigation. I would also like to see an up-to-date dataset that include other minority groups such as Asians and Native Americans, as this program has an unknown effect on minority groups smaller than 5-7% of the population.
+
