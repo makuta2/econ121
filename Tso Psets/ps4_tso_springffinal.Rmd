@@ -47,7 +47,10 @@ library(plm)
 
 load(url("https://github.com/tvogl/econ121/raw/main/data/nfhs5.Rdata"))
 nlsy_kids<-nfhs5
+view(nlsy_kids)
 
+lpm_model <- feols(child_u1death ~ child_bord, data = nfhs5, cluster = nfhs5$psu_id)
+summary(lpm_model)
 
 ```
 
