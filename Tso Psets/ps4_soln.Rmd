@@ -1,4 +1,14 @@
-# This R script presents solutions to ECON 121 Problem Set 4.
+---
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) # sets the code chunk format
+rm(list = ls()) # clears the environment
+```
+
+```{r message=FALSE, warning=FALSE}
+## This R script presents solutions to ECON 121 Problem Set 4.
 
 # Clear environment, load R packages
 rm(list=ls())
@@ -8,12 +18,13 @@ library(fixest)
 # Load the dataset
 #load("/Users/tvogl/Dropbox/courses/econ121/data/nlsy_kids/nlsy_kids.Rdata")
 load(url("https://github.com/tvogl/econ121/raw/main/data/nlsy_kids.Rdata"))
+```
 
 
+```{r echo=TRUE}
  # # # # # #
 # Problem 2 # 
  # # # # # #
-  
 # Summary statistics appear below. 21 percent of the sample participated
 # in HS. 32 percent of the sample is black, and 20 percent is Hispanic.
 # Average mother's education is 12 years. 3 in 10 repeat a grade, another
@@ -21,6 +32,7 @@ load(url("https://github.com/tvogl/econ121/raw/main/data/nlsy_kids.Rdata"))
 # of note is the number of NA values, which is very high for ppvt_3.
 # This high level of "missingness" will be important later.
 summary(nlsy_kids)
+
 
 # The question asks about the backgrounds of kids who participated in HS.
 # HS participants are more likely to be black, have lower family income,
@@ -35,11 +47,17 @@ nlsy_kids %>%
               lninc_0to3 = mean(lninc_0to3, na.rm = TRUE),
               momed = mean(momed, na.rm = TRUE),
               somecoll = mean(somecoll, na.rm = TRUE))
+```
 
+  
+\newpage
+
+## clustering standard error
+
+```{r echo=TRUE}
  # # # # # #
 # Problem 3 # 
  # # # # # #
-  
 # Run an OLS regression of the age 5-6 test score on the HS indicator,
 # clustering standard errors by mom_id.
 feols(comp_score_5to6 ~ head_start,
@@ -61,6 +79,13 @@ sd(nlsy_kids$comp_score_5to6, na.rm=TRUE)
 # effect. The bias is probably negative, since disadvantaged families select
 # into HS, and kids from disadvantaged families may tend to have worse long-term
 # outcomes.
+```
+
+\newpage
+
+## Raw OLS
+
+```{r echo=TRUE}
 
  # # # # # #
 # Problem 4 # 
@@ -84,6 +109,13 @@ feols(mean_test ~ mean_head_start,
 # than the one from question 3. That is consistent with family-level 
 # omitted variables: kids from disadvantaged families enroll in HS,
 # and they have have lower average test scores due to their disadvantage.
+```
+
+\newpage
+
+## Fixed Effects
+
+```{r echo=TRUE}
 
  # # # # # #
 # Problem 5 # 
@@ -100,6 +132,13 @@ feols(comp_score_5to6 ~ head_start | mom_id,
 # finding a negative association in the pooled and between effect models.
 # The full-sample fixed effect model without controls indicates that HS
 # raises test scores by 7.6 points, or one-third of a SD, on average.
+```
+
+\newpage
+
+## Mother Fixed Effects Regression
+
+```{r echo=TRUE}
 
  # # # # # #
 # Problem 6 # 
@@ -136,6 +175,12 @@ feols(comp_score_5to6 ~ head_start | mom_id,
 # covariates. This suggest that within-family OVB is *NOT* the issue, but
 # rather that individuals with missing data on covariates have larger effects.
 # The estimates are robust to controlling for pre-HS covariates
+```
+\newpage
+
+## Standardize variable outcomes
+
+```{r echo=TRUE}
 
  # # # # # #
 # Problem 7 # 
@@ -179,6 +224,13 @@ feols(std_7to10 ~ head_start | mom_id,
       data = nlsy_kids_subsample)
 feols(std_11to14 ~ head_start | mom_id,
       data = nlsy_kids_subsample)
+```
+
+\newpage
+
+## Final effects regression
+
+```{r echo=TRUE}
 
  # # # # # #
 # Problem 7 # 
@@ -203,7 +255,13 @@ feols(idle ~ head_start | mom_id,
        data = nlsy_kids)
 feols(fphealth ~ head_start | mom_id,
        data = nlsy_kids)
+```
 
+\newpage
+
+## interaction terms race collinear effects
+
+```{r echo=TRUE}
  # # # # # #
 # Problem 8 # 
  # # # # # #
@@ -222,6 +280,12 @@ feols(fphealth ~ head_start | mom_id,
 
 feols(hsgrad ~ head_start*(hispanic + black + male) | mom_id,
       data = nlsy_kids)
+```
+
+\newpage
+
+## conclusion
+```{r echo=TRUE}
 
  # # # # # #
 # Problem 9 # 
@@ -237,4 +301,4 @@ feols(hsgrad ~ head_start*(hispanic + black + male) | mom_id,
 # same time, the lack of significant treatment effect heterogeneity in Problem 9 
 # suggests that perhaps we can extrapolate. Many answers could receive full credit 
 # for this question.
-
+```
